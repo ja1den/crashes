@@ -2,7 +2,6 @@
 import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
-import config from '../lib/config';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -18,11 +17,23 @@ export default async (req: Request, res: Response) => {
 
 				// Pagination
 				if (req.query.page !== undefined) {
+					// Page Number
 					if (typeof req.query.page !== 'string' || !Number.isInteger(parseFloat(req.query.page))) {
 						return res.status(400).end();
 					}
 
 					const page = parseInt(req.query.page);
+
+					// Page Size
+					let size = 25;
+
+					if (req.query.size !== undefined) {
+						if (typeof req.query.size !== 'string' || !Number.isInteger(parseFloat(req.query.size))) {
+							return res.status(400).end();
+						} else {
+							size = parseInt(req.query.size);
+						}
+					}
 
 					// Minimum Page
 					if (page <= 0) {
@@ -30,12 +41,12 @@ export default async (req: Request, res: Response) => {
 					}
 
 					// Maximum Page
-					if (page > Math.ceil(count / config.pageSize)) {
+					if (page > Math.ceil(count / size)) {
 						return res.status(404).end();
 					}
 
 					// Update SQL
-					sql += ' LIMIT ' + config.pageSize + ' OFFSET ' + (page - 1) * config.pageSize;
+					sql += ' LIMIT ' + size + ' OFFSET ' + (page - 1) * size;
 				}
 
 				// Execute SQL 
