@@ -6,6 +6,8 @@ import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
 
+import { crash } from '../../src/lib/models';
+
 // Read File
 const baseSQL = fs.readFileSync(path.resolve(__dirname, '..', '..', 'sql', 'crashes.sql')).toString();
 
@@ -61,6 +63,51 @@ export default async (req: Request, res: Response) => {
 				// Send Response
 				res.send({ count, data });
 			} catch (err) {
+				// Log
+				console.error(err);
+
+				// Send Response
+				res.status(500).end();
+			}
+			break;
+
+		case 'POST':
+			try {
+				// Joi
+				if (crash.validate(req.body).error !== undefined) {
+					return res.status(400).end();
+				}
+
+				// Execute SQL
+				await mysql.query('INSERT INTO crashes VALUES (NULL, ' + '?, '.repeat(17) + '?)', [
+					req.body.region_id,
+					req.body.suburb_id,
+					req.body.units,
+					req.body.fatalities,
+					req.body.injuries,
+					req.body.date.match(/\d{4}-\d{2}-\d{2}/)[0],
+					req.body.time,
+					req.body.speed_limit,
+					req.body.road_type_id,
+					req.body.curve_id,
+					req.body.slope_id,
+					req.body.surface_id,
+					req.body.dry,
+					req.body.raining,
+					req.body.day,
+					req.body.crash_type_id,
+					req.body.alcohol,
+					req.body.drugs
+				]);
+
+				// Send Response
+				res.status(201).end();
+			} catch (err) {
+				// Invalid Foreign Key
+				if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+					return res.status(422).end();
+				}
+
 				// Log
 				console.error(err);
 

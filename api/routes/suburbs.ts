@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
 
+import { suburb } from '../../src/lib/models';
+
 // Export
 export default async (req: Request, res: Response) => {
 	// Switch on Method
@@ -55,6 +57,35 @@ export default async (req: Request, res: Response) => {
 				// Send Response
 				res.send({ count, data });
 			} catch (err) {
+				// Log
+				console.error(err);
+
+				// Send Response
+				res.status(500).end();
+			}
+			break;
+
+		case 'POST':
+			try {
+				// Joi
+				if (suburb.validate(req.body).error !== undefined) {
+					return res.status(400).end();
+				}
+
+				// Execute SQL
+				await mysql.query('INSERT INTO suburbs VALUES (NULL, ?, ?)', [
+					req.body.name,
+					req.body.postcode
+				]);
+
+				// Send Response
+				res.status(201).end();
+			} catch (err) {
+				// Duplicate Entry
+				if (err.code === 'ER_DUP_ENTRY') {
+					return res.status(409).end();
+				}
+
 				// Log
 				console.error(err);
 
