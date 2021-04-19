@@ -14,3 +14,24 @@ $enable-semantic-container: true;
 /* Components */
 
 @import './components/layout.scss';
+
+
+/* Table Page */
+
+#table {
+	.pagination {
+		display: flex;
+		flex-direction: row;
+
+		justify-content: space-between;
+		align-items: center;
+
+		button {
+			width: fit-content;
+		}
+	}
+
+	th, td {
+		white-space: nowrap;
+	}
+}

@@ -32,6 +32,7 @@
 		"axios": "^0.21.1",
 		"colors": "^1.4.0",
 		"express": "^4.17.1",
+		"joi": "^17.4.0",
 		"minimist": "^1.2.5",
 		"mysql2": "^2.2.5",
 		"normalize.css": "^8.0.1",
