@@ -1,14 +1,12 @@
-# React Express Template
+# Crash Data
 
-> My template for [React](https://reactjs.org/) projects.
+> Database design task for Stage 2 Digital Technologies.
 
 ## Introduction
 
-This is a template for [React](https://reactjs.org/) projects built with [TypeScript](https://www.typescriptlang.org/).
+This app was built to store South Australian road crash data. The source data can be found [here](https://data.sa.gov.au/data/dataset/road-crash-data).
 
-It includes an [Express](https://expressjs.com/) server that hosts a REST API.
-
-It also includes a [Dockerfile](Dockerfile).
+It reads from a [MySQL](https://www.mysql.com/) database, and is built with [React](https://reactjs.org/) and [Express](https://expressjs.com/).
 
 ## Usage
 
@@ -33,7 +31,7 @@ npm run lint
 Build the [Docker](https://www.docker.com/) image.
 
 ```sh
-docker build . -t ja1den/react-express-template
+docker build . -t ja1den/crashes
 ```
 
 ## License
