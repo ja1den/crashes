@@ -1,0 +1,26 @@
+/* Packages */
+
+@import '../../node_modules/normalize.css/normalize.css';
+
+/* Font */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+:root {
+	font-family: 'Roboto';
+}
+
+/* Page */
+
+#root {
+	display: flex;
+
+	justify-content: center;
+	align-items: center;
+
+	height: 100vh;
+
+	p {
+		font-size: 32px;
+	}
+}

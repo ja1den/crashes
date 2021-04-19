@@ -1,0 +1,9 @@
+{
+	"$schema": "http://json.schemastore.org/nodemon",
+	"watch": [
+		"api"
+	],
+	"ext": "*.ts",
+	"exec": "ts-node-script -r dotenv/config api/index.ts --port 4000",
+	"quiet": true
+}
