@@ -28,10 +28,14 @@ const TablePage: React.FC = () => {
 
 			setRecords(res.data.data);
 			setCount(res.data.count);
+		}).catch(err => {
+			if (Math.floor(err.response.status / 100) === 4) {
+				return history.push(location.pathname + '?page=1');
+			}
 		});
 
 		return () => { mounted = false };
-	}, [name, page]);
+	}, [name, page, history, location.pathname]);
 
 	// Buttons
 	const prevPage = () => history.push(location.pathname + '?page=' + (page - 1));
