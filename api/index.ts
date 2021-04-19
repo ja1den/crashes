@@ -68,7 +68,7 @@ async function main() {
 	for (const signal of ['SIGINT', 'SIGTERM', 'SIGUSR2'] as NodeJS.Signals[]) {
 		process.addListener(signal, () => {
 			console.log('');
-			server.close();
+			process.exit(0);
 		});
 	}
 }
