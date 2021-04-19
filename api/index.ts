@@ -58,11 +58,10 @@ async function main() {
 	}
 
 	// Listen
-	const server = app.listen(port);
-
-	// Log
-	console.log('Server running at', ('http://localhost:' + port).cyan);
-	console.log(('\u2728  Up in ' + (Date.now() - time) + 'ms.').green);
+	app.listen(port, () => {
+		console.log('Server running at', ('http://localhost:' + port).cyan);
+		console.log(('\u2728  Up in ' + (Date.now() - time) + 'ms.').green);
+	});
 
 	// Handle Exit
 	for (const signal of ['SIGINT', 'SIGTERM', 'SIGUSR2'] as NodeJS.Signals[]) {

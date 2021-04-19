@@ -1,7 +1,13 @@
 // Import
+import path from 'path';
+import fs from 'fs';
+
 import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
+
+// Read File
+const baseSQL = fs.readFileSync(path.resolve(__dirname, '..', '..', 'sql', 'crashes.sql')).toString();
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -13,7 +19,7 @@ export default async (req: Request, res: Response) => {
 				const count = (await mysql.query('SELECT COUNT(*) FROM crashes'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = 'SELECT * FROM crashes';
+				let sql = baseSQL.trim().replace(';', '');
 
 				// Pagination
 				if (req.query.page !== undefined) {
