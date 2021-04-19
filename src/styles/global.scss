@@ -1,26 +1,16 @@
+/* Configuration */
+
+$enable-semantic-container: true;
+
 /* Packages */
 
 @import '../../node_modules/normalize.css/normalize.css';
+@import '../../node_modules/@picocss/pico/scss/pico';
 
-/* Font */
+/* Theme */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import './theme.scss';
 
-:root {
-	font-family: 'Roboto';
-}
+/* Components */
 
-/* Page */
-
-#root {
-	display: flex;
-
-	justify-content: center;
-	align-items: center;
-
-	height: 100vh;
-
-	p {
-		font-size: 32px;
-	}
-}
+@import './components/layout.scss';

@@ -1,0 +1,41 @@
+/* Navigation */
+
+nav {
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	z-index: 99;
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	backdrop-filter: saturate(180%) blur(20px);
+	background-color: var(--nav-background);
+	box-shadow: 0px 1px 0 var(--nav-border);
+}
+
+/* Spacing */
+
+$navHeight: 3.5rem;
+
+#root > main {
+	padding-top: calc(1rem * var(--spacing-factor-xs) + #{$navHeight});
+
+	@media (min-width: map-get($breakpoints, "sm")) {
+		padding-top: calc(1rem * var(--spacing-factor-sm) + #{$navHeight});
+	}
+
+	@media (min-width: map-get($breakpoints, "md")) {
+		padding-top: calc(1rem * var(--spacing-factor-md) + #{$navHeight});
+	}
+
+	@media (min-width: map-get($breakpoints, "lg")) {
+		padding-top: calc(1rem * var(--spacing-factor-lg) + #{$navHeight});
+	}
+
+	@media (min-width: map-get($breakpoints, "xl")) {
+		padding-top: calc(1rem * var(--spacing-factor-xl) + #{$navHeight});
+	}
+
+	> * {
+		min-width: 0;
+	}
+}

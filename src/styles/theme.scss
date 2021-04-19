@@ -1,0 +1,21 @@
+/* Light Theme */
+
+[data-theme="light"],
+:root:not([data-theme="dark"]) {
+	--nav-background: #{rgba($white, .7)};
+	--nav-border:     #{rgba($grey-500, .2)};
+}
+
+/* Dark Theme */
+
+@media only screen and (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--nav-background: #{rgba(darken($grey-900, 6%), .8)};
+		--nav-border:     #{rgba($grey-500, .2)};
+	}
+}
+
+[data-theme="dark"] {
+	--nav-background: #{rgba(darken($grey-900, 6%), .8)};
+	--nav-border:     #{rgba($grey-500, .2)};
+}

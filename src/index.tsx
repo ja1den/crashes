@@ -1,22 +1,51 @@
 // Import
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
-import axios from 'axios';
+import {
+	BrowserRouter,
+	Switch,
+	Route,
+	Link
+} from 'react-router-dom';
 
 import './styles/global.scss';
 
+// Pages
+import HomePage from './pages/Home';
+import TablesPage from './pages/Tables';
+import InputPage from './pages/Input';
+
 // Root Component
 const Root: React.FC = () => {
-	const [color, setColor] = useState<string>('transparent');
+	return (
+		<BrowserRouter>
+			<nav className='container-fluid'>
+				<ul>
+					<li><strong>Crash Data</strong></li>
+				</ul>
+				<ul>
+					<li><Link to='/'>Home</Link></li>
+					<li><Link to='/tables'>Tables</Link></li>
+					<li><Link to='/input'>Input</Link></li>
+				</ul>
+			</nav>
 
-	useEffect(() => {
-		axios.get('/api/color')
-			.then(res => setColor(res.data.color))
-			.catch(console.error);
-	}, []);
+			<Switch>
+				<Route path='/tables'>
+					<TablesPage />
+				</Route>
 
-	return <p style={{ color }}>Hello!</p>;
+				<Route path='/input'>
+					<InputPage />
+				</Route>
+
+				<Route path='/'>
+					<HomePage />
+				</Route>
+			</Switch>
+		</BrowserRouter>
+	);
 }
 
 // Render to DOM
