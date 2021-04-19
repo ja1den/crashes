@@ -3,6 +3,7 @@
 	"scripts": {
 		"api": "nodemon",
 		"build": "./scripts/build.sh",
+		"kill": "kill $(lsof -ti:4000)",
 		"lint": "sort-package-json",
 		"postinstall": "patch-package",
 		"start": "react-scripts start"
