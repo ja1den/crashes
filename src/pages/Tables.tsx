@@ -45,17 +45,13 @@ const TablesPage: React.FC = () => {
 					</thead>
 
 					<tbody>
-						{
-							names.map(name => (
-								<tr key={name}>
-									<td>{toTitle(name)}</td>
-									<td>{counts[name] ?? <small>Loading...</small>}</td>
-									<td>
-										<Link to={'/table/' + name + '?page=1'}>Link</Link>
-									</td>
-								</tr>
-							))
-						}
+						{names.map(name => (
+							<tr key={name}>
+								<td>{toTitle(name)}</td>
+								<td>{counts[name] ?? <small>Loading...</small>}</td>
+								<td><Link to={'/table/' + name + '?page=1'}>Link</Link></td>
+							</tr>
+						))}
 					</tbody>
 				</table>
 			</figure>

@@ -69,27 +69,25 @@ const TablePage: React.FC = () => {
 							<tbody>
 								{records.map(record => (
 									<tr key={record.id}>
-										{
-											Object.keys(record).map(key => {
-												let str = record[key];
+										{Object.keys(record).map(key => {
+											let str = record[key];
 
-												if (['dry', 'raining', 'day', 'alcohol', 'drugs'].includes(key)) {
-													str = Boolean(record[key]).toString().slice(0, 1).toUpperCase();
-												}
+											if (['dry', 'raining', 'day', 'alcohol', 'drugs'].includes(key)) {
+												str = Boolean(record[key]).toString().slice(0, 1).toUpperCase();
+											}
 
-												if (key === 'date') {
-													str = toDateString(new Date(record[key]));
-												}
+											if (key === 'date') {
+												str = toDateString(new Date(record[key]));
+											}
 
-												if (key === 'time') {
-													str = record[key].toString().match(/\d+:\d+/)[0];
-												}
+											if (key === 'time') {
+												str = record[key].toString().match(/\d+:\d+/)[0];
+											}
 
-												return (
-													<td key={key}>{str}</td>
-												);
-											})
-										}
+											return (
+												<td key={key}>{str}</td>
+											);
+										})}
 									</tr>
 								))}
 							</tbody>
