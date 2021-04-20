@@ -19,7 +19,7 @@ const TablePage: React.FC = () => {
 	const name = location.pathname.match(/\/([^/]+)$/)?.[1];
 	const page = parseInt(new URLSearchParams(location.search).get('page') ?? '1');
 
-	// Records
+	// Read Records
 	useEffect(() => {
 		let mounted = true;
 
@@ -38,8 +38,7 @@ const TablePage: React.FC = () => {
 	}, [name, page, history, location.pathname]);
 
 	// Buttons
-	const prevPage = () => history.push(location.pathname + '?page=' + (page - 1));
-	const nextPage = () => history.push(location.pathname + '?page=' + (page + 1));
+	const loadPage = (page: number) => history.push(location.pathname + '?page=' + page);
 
 	// Component HTML
 	return (
@@ -52,9 +51,9 @@ const TablePage: React.FC = () => {
 			{records !== undefined && (
 				<Fragment>
 					<div className='pagination'>
-						<button className='outline' disabled={page === 1} onClick={prevPage}>&#60;</button>
+						<button className='outline' onClick={loadPage.bind(null, page - 1)} disabled={page === 1}>&#60;</button>
 						<p>{page} / {Math.ceil(count / 25)}</p>
-						<button className='outline' disabled={page === Math.ceil(count / 25)} onClick={nextPage}>&#62;</button>
+						<button className='outline' onClick={loadPage.bind(null, page + 1)} disabled={page === Math.ceil(count / 25)}>&#62;</button>
 					</div>
 
 					<figure>

@@ -19,8 +19,8 @@ export interface Crash {
 	units: number;
 	fatalities: number;
 	injuries: number;
-	date: Date;
-	time: string;
+	date: Date | null;
+	time: string | null;
 	speed_limit: number;
 	road_type_id: number;
 	curve_id: number | null;
