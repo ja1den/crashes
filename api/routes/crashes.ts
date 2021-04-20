@@ -9,7 +9,7 @@ import mysql from '../lib/mysql';
 import { crash } from '../../src/lib/models';
 
 // Read File
-const baseSQL = fs.readFileSync(path.resolve(__dirname, '..', '..', 'sql', 'crashes.sql')).toString();
+const baseSQL = fs.readFileSync(path.resolve(__dirname, '..', 'sql', 'crashes.sql')).toString();
 
 // Export
 export default async (req: Request, res: Response) => {

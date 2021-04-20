@@ -21,18 +21,18 @@ SELECT
     drugs
 FROM
     crashes.crashes
-        INNER JOIN
+        LEFT JOIN
     regions ON crashes.region_id = regions.id
-        INNER JOIN
+        LEFT JOIN
     suburbs ON crashes.suburb_id = suburbs.id
-        INNER JOIN
+        LEFT JOIN
     road_types ON crashes.road_type_id = road_types.id
-        INNER JOIN
+        LEFT JOIN
     curves ON crashes.curve_id = curves.id
-        INNER JOIN
+        LEFT JOIN
     slopes ON crashes.slope_id = slopes.id
-        INNER JOIN
+        LEFT JOIN
     surfaces ON crashes.surface_id = surfaces.id
-        INNER JOIN
+        LEFT JOIN
     crash_types ON crashes.crash_type_id = crash_types.id
 ORDER BY crashes.id;
