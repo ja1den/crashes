@@ -35,3 +35,23 @@ $enable-semantic-container: true;
 		white-space: nowrap;
 	}
 }
+
+/* Input Page */
+
+#input article {
+	form {
+		.grid {
+			grid-row-gap: 0;
+
+			@if map-get($breakpoints, "lg") {
+				@media (min-width: map-get($breakpoints, "lg")) {
+					grid-row-gap: var(--spacing-gutter);
+				}
+			}
+		}
+
+		del {
+			text-decoration: none;
+		}
+	}
+}
