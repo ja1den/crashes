@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import { Link } from 'react-router-dom';
 
-import toTitle from '../lib/toTitle';
+import toTitle from 'lib/toTitle';
 
 // Table Names
 const names = ['crashes', 'crash_types', 'curves', 'regions', 'road_types', 'slopes', 'suburbs', 'surfaces'];

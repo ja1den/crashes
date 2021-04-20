@@ -4,15 +4,15 @@ import ReactDOM from 'react-dom';
 
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 
-import './styles/global.scss';
+import 'styles/global.scss';
 
 // Pages
-import TablesPage from './pages/Tables';
-import TablePage from './pages/Table';
+import TablesPage from 'pages/Tables';
+import TablePage from 'pages/Table';
 
-import InputPage from './pages/Input';
+import InputPage from 'pages/Input';
 
-import HomePage from './pages/Home';
+import HomePage from 'pages/Home';
 
 // Root Component
 const Root: React.FC = () => {

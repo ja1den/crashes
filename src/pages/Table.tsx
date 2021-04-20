@@ -4,8 +4,8 @@ import axios from 'axios';
 
 import { useHistory, useLocation } from 'react-router-dom';
 
-import toDateString from '../lib/toDateString';
-import toTitle from '../lib/toTitle';
+import toDateString from 'lib/toDateString';
+import toTitle from 'lib/toTitle';
 
 // Table Component
 const TablePage: React.FC = () => {
