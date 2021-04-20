@@ -15,7 +15,7 @@ export default async (req: Request, res: Response) => {
 				const count = (await mysql.query('SELECT COUNT(*) FROM slopes'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = 'SELECT * FROM slopes';
+				let sql = 'SELECT * FROM slopes ORDER BY id';
 
 				// Pagination
 				if (req.query.page !== undefined) {
