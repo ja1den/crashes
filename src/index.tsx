@@ -11,6 +11,7 @@ import TablesPage from 'pages/Tables';
 import TablePage from 'pages/Table';
 
 import InputPage from 'pages/Input';
+import UploadPage from 'pages/Upload';
 
 import HomePage from 'pages/Home';
 
@@ -26,6 +27,7 @@ const Root: React.FC = () => {
 					<li><Link to='/'>Home</Link></li>
 					<li><Link to='/table'>Table</Link></li>
 					<li><Link to='/input'>Input</Link></li>
+					<li><Link to='/upload'>Upload</Link></li>
 				</ul>
 			</nav>
 
@@ -40,6 +42,10 @@ const Root: React.FC = () => {
 
 				<Route path='/input'>
 					<InputPage />
+				</Route>
+
+				<Route path='/upload'>
+					<UploadPage />
 				</Route>
 
 				<Route path='/' exact>
