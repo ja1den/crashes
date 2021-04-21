@@ -4,6 +4,8 @@ import axios from 'axios';
 
 import { suburb, Suburb } from 'lib/models';
 
+import Form from 'components/Form';
+
 // Types
 declare namespace SuburbForm {
 	export interface State {
@@ -27,53 +29,33 @@ class SuburbForm extends React.Component<object, SuburbForm.State> {
 	}
 
 	render() {
-		// Destructure
 		const { status, data } = this.state;
 
 		// Component HTML
 		return (
-			<article>
-				<form onSubmit={this.onSubmit}>
-					<h6>Create a Suburb</h6>
+			<Form onSubmit={this.onSubmit}>
+				<h6>Create a Suburb</h6>
 
-					<label htmlFor='nameField'>Name</label>
-					<input type='text' id='nameField' maxLength={255} aria-invalid={data.name === ''} onChange={this.onChange} />
+				<Form.StringInput name={['name', 'Name']} onChange={this.onChange} />
+				<Form.NumberInput name={['postcode', 'Postcode']} onChange={this.onChange} />
 
-					<label htmlFor='postcodeField'>Postcode</label>
-					<input type='number' id='postcodeField' min='0' aria-invalid={!Number.isInteger(data.postcode)} onKeyDown={this.onKeyDown} onChange={this.onChange} />
+				<button type='submit' disabled={suburb.validate(data).error !== undefined}>Submit</button>
 
-					<button type='submit' disabled={suburb.validate(data).error !== undefined}>Submit</button>
-
-					{status[0] !== null && (
-						!!status[0]
-							? <ins>{status[1]}</ins>
-							: <del>{status[1]}</del>
-					)}
-				</form>
-			</article>
+				{status[0] !== null && (
+					!!status[0]
+						? <ins>{status[1]}</ins>
+						: <del>{status[1]}</del>
+				)}
+			</Form>
 		);
 	}
 
 	// Handle Change
-	onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-		const update: Partial<SuburbForm.State['data']> = {};
-
-		// Switch on Target ID
-		switch (event.target.id) {
-			case 'nameField':
-				update.name = event.target.value;
-				break;
-
-			case 'postcodeField':
-				update.postcode = parseInt(event.target.value)
-				break;
-		}
-
-		// Update Data
+	onChange = (name: string, value: string | number) => {
 		this.setState(state => ({
 			data: {
 				...state.data,
-				...update
+				[name]: value
 			}
 		}));
 	}
@@ -93,11 +75,6 @@ class SuburbForm extends React.Component<object, SuburbForm.State> {
 			.finally(() => setTimeout(() => this.setState({ status: [null, ''] }), 10 * 1000));
 
 		event.preventDefault();
-	}
-
-	// Filter Number Inputs
-	onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-		if (['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();
 	}
 }
 

@@ -4,14 +4,16 @@ import axios from 'axios';
 
 import { curve, Curve } from 'lib/models';
 
+import Form from 'components/Form';
+
 // Form Component
 const CurveForm: React.FC = () => {
 	const [status, setStatus] = useState<[number | null, string]>([null, '']);
 	const [data, setData] = useState<Omit<Curve, 'id'>>({ name: '' });
 
 	// Handle Change
-	const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-		setData({ name: event.target.value });
+	const onChange = (_name: string, value: string) => {
+		setData({ name: value });
 	}
 
 	// Handle Submit
@@ -33,22 +35,19 @@ const CurveForm: React.FC = () => {
 
 	// Component HTML
 	return (
-		<article>
-			<form onSubmit={onSubmit}>
-				<h6>Create a Curve</h6>
+		<Form onSubmit={onSubmit}>
+			<h6>Create a Curve</h6>
 
-				<label htmlFor='nameField'>Name</label>
-				<input type='text' id='nameField' maxLength={255} aria-invalid={data.name === ''} onChange={onChange} />
+			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-				<button type='submit' disabled={curve.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={curve.validate(data).error !== undefined}>Submit</button>
 
-				{status[0] !== null && (
-					!!status[0]
-						? <ins>{status[1]}</ins>
-						: <del>{status[1]}</del>
-				)}
-			</form>
-		</article >
+			{status[0] !== null && (
+				!!status[0]
+					? <ins>{status[1]}</ins>
+					: <del>{status[1]}</del>
+			)}
+		</Form>
 	);
 }
 

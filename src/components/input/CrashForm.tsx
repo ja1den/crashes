@@ -13,6 +13,8 @@ import {
 	Surface
 } from 'lib/models';
 
+import Form from 'components/Form';
+
 // Types
 declare namespace CrashForm {
 	export interface State {
@@ -28,10 +30,6 @@ declare namespace CrashForm {
 			surfaces: Surface[];
 		}
 	}
-}
-
-interface ChangeUpdate {
-	[key: string]: number | string | boolean | Date | null;
 }
 
 // Form Component
@@ -50,7 +48,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 				fatalities: NaN,
 				injuries: NaN,
 				date: null,
-				time: null,
+				time: '',
 				speed_limit: NaN,
 				road_type_id: NaN,
 				curve_id: NaN,
@@ -99,133 +97,69 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 	}
 
 	render() {
-		// Destructure
-		const { status, data, records } = this.state;
+		const { status, records } = this.state;
 
-		// Component HTML
+		// Component HTML 
 		return (
 			<article>
 				<form onSubmit={this.onSubmit}>
 					<h4>Create a Crash</h4>
 
 					<div className='grid'>
-						<label htmlFor='regionField'>
-							Region
-							<select id='regionField' onChange={this.onChangeSelect}>
-								{records.regions.map(region => (
-									<option key={region.id}>{region.name}</option>
-								))}
-							</select>
-						</label>
+						<Form.SelectInput name={['region_id', 'Region']} options={records.regions.reduce((arr: [number, string][], region: Region) => (
+							[...arr, [region.id, region.name]] as [number, string][]
+						), [])} onChange={this.onChange} />
 
-						<label htmlFor='suburbField'>
-							Suburb
-							<select id='suburbField' onChange={this.onChangeSelect}>
-								{records.suburbs.map(suburb => (
-									<option key={suburb.id}>{suburb.name}</option>
-								))}
-							</select>
-						</label>
+						<Form.SelectInput name={['suburb_id', 'Suburb']} options={records.suburbs.reduce((arr: [number, string][], suburb: Suburb) => (
+							[...arr, [suburb.id, suburb.name]] as [number, string][]
+						), [])} onChange={this.onChange} />
 					</div>
 
-					<label htmlFor='unitField'>No. Units</label>
-					<input type='number' id='unitField' min='0' aria-invalid={!Number.isInteger(data.units)} onKeyDown={this.onKeyDown} onChange={this.onChangeInput} />
+					<Form.NumberInput name={['units', 'No. Units']} onChange={this.onChange} />
 
 					<div className='grid'>
-						<label htmlFor='fatalitiesField'>
-							No. Fatalities
-							<input type='number' id='fatalitiesField' min='0' aria-invalid={!Number.isInteger(data.fatalities)} onKeyDown={this.onKeyDown} onChange={this.onChangeInput} />
-						</label>
-
-						<label htmlFor='injuriesField'>
-							No. Injuries
-							<input type='number' id='injuriesField' min='0' aria-invalid={!Number.isInteger(data.injuries)} onKeyDown={this.onKeyDown} onChange={this.onChangeInput} />
-						</label>
+						<Form.NumberInput name={['fatalities', 'No. Fatalities']} onChange={this.onChange} />
+						<Form.NumberInput name={['injuries', 'No. Injuries']} onChange={this.onChange} />
 					</div>
 
 					<div className='grid'>
-						<label htmlFor='dateField'>
-							Date
-							<input type='month' id='dateField' aria-invalid={data.date === null} onChange={this.onChangeInput} />
-						</label>
-
-						<label htmlFor='timeField'>
-							Time
-							<input type='time' id='timeField' aria-invalid={data.time === null} onChange={this.onChangeInput} />
-						</label>
+						<Form.DateInput name={['date', 'Date']} onChange={this.onChange} />
+						<Form.TimeInput name={['time', 'Time']} onChange={this.onChange} />
 					</div>
 
-					<label htmlFor='speedField'>Speed Limit</label>
-					<input type='number' id='speedField' min='0' aria-invalid={!Number.isInteger(data.speed_limit)} onKeyDown={this.onKeyDown} onChange={this.onChangeInput} />
+					<Form.NumberInput name={['speed_limit', 'Speed Limit']} onChange={this.onChange} />
 
-					<label htmlFor='roadField'>Road Type</label>
-					<select id='roadField' onChange={this.onChangeSelect}>
-						{records.roadTypes.map(roadType => (
-							<option key={roadType.id}>{roadType.name}</option>
-						))}
-					</select>
+					<Form.SelectInput name={['road_type_id', 'Road Type']} options={records.roadTypes.reduce((arr: [number, string][], roadType: RoadType) => (
+						[...arr, [roadType.id, roadType.name]] as [number, string][]
+					), [])} onChange={this.onChange} />
 
 					<div className='grid'>
-						<label htmlFor='curveField'>
-							Curve
-							<select id='curveField' onChange={this.onChangeSelect}>
-								{records.curves.map(curve => (
-									<option key={curve.id}>{curve.name}</option>
-								))}
-							</select>
-						</label>
+						<Form.SelectInput name={['curve_id', 'Curve']} options={records.curves.reduce((arr: [number, string][], curve: Curve) => (
+							[...arr, [curve.id, curve.name]] as [number, string][]
+						), [])} onChange={this.onChange} />
 
-						<label htmlFor='slopeField'>
-							Slope
-							<select id='slopeField' onChange={this.onChangeSelect}>
-								{records.slopes.map(slope => (
-									<option key={slope.id}>{slope.name}</option>
-								))}
-							</select>
-						</label>
+						<Form.SelectInput name={['slope_id', 'Slope']} options={records.slopes.reduce((arr: [number, string][], slope: Slope) => (
+							[...arr, [slope.id, slope.name]] as [number, string][]
+						), [])} onChange={this.onChange} />
 					</div>
 
-					<label htmlFor='surfaceField'>Surface</label>
-					<select id='surfaceField' onChange={this.onChangeSelect}>
-						{records.surfaces.map(surface => (
-							<option key={surface.id}>{surface.name}</option>
-						))}
-					</select>
+					<Form.SelectInput name={['surface_id', 'Surface']} options={records.surfaces.reduce((arr: [number, string][], surface: Surface) => (
+						[...arr, [surface.id, surface.name]] as [number, string][]
+					), [])} onChange={this.onChange} />
 
 					<fieldset>
-						<label htmlFor='dryField'>
-							<input type='checkbox' id='dryField' role='switch' defaultChecked={true} onChange={this.onChangeInput} />
-							Dry
-						</label>
-
-						<label htmlFor='rainField'>
-							<input type='checkbox' id='rainField' role='switch' onChange={this.onChangeInput} />
-							Raining
-						</label>
-
-						<label htmlFor='dayField'>
-							<input type='checkbox' id='dayField' role='switch' defaultChecked={true} onChange={this.onChangeInput} />
-							Day
-						</label>
+						<Form.BooleanInput name={['dry', 'Dry']} onChange={this.onChange} checked />
+						<Form.BooleanInput name={['raining', 'Raining']} onChange={this.onChange} />
+						<Form.BooleanInput name={['day', 'Day']} onChange={this.onChange} checked />
 					</fieldset>
 
-					<label htmlFor='crashField'>Crash Type</label>
-					<select id='crashField' onChange={this.onChangeSelect}>
-						{records.crashTypes.map(crashType => (
-							<option key={crashType.id}>{crashType.name}</option>
-						))}
-					</select>
+					<Form.SelectInput name={['crash_type_id', 'Crash Type']} options={records.crashTypes.reduce((arr: [number, string][], crashType: CrashType) => (
+						[...arr, [crashType.id, crashType.name]] as [number, string][]
+					), [])} onChange={this.onChange} />
 
 					<fieldset>
-						<label htmlFor='alcoholField'>
-							<input type='checkbox' id='alcoholField' role='switch' onChange={this.onChangeInput} />
-							DUI Involved
-						</label>
-
-						<label htmlFor='drugsField'>
-							<input type='checkbox' id='drugsField' role='switch' onChange={this.onChangeInput} />
-							Drugs Involved
-						</label>
+						<Form.BooleanInput name={['alcohol', 'DUI Involved']} onChange={this.onChange} />
+						<Form.BooleanInput name={['drugs', 'Drugs Involved']} onChange={this.onChange} />
 					</fieldset>
 
 					<button type='submit' disabled={crash.validate(this.state.data).error !== undefined}>Submit</button>
@@ -240,76 +174,12 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 		);
 	}
 
-	// Handle Input Change
-	onChangeInput: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-		const update: ChangeUpdate = {};
-
-		// Field Name
-		let name = event.target.id.match(/.+(?=Field)/)?.[0] ?? null;
-		if (name === null) return;
-
-		if (name === 'unit') name = 'units';
-		if (name === 'speed') name = 'speed_limit';
-		if (name === 'rain') name = 'raining';
-
-		// Switch on Input Type
-		switch (event.target.type) {
-			case 'number':
-				update[name] = parseInt(event.target.value);
-				break;
-
-			case 'month':
-				update[name] = event.target.value !== ''
-					? new Date(event.target.value)
-					: null;
-				break;
-
-			case 'time':
-				update[name] = event.target.value;
-				break;
-
-			case 'checkbox':
-				update[name] = event.target.checked;
-				break;
-		}
-
-		// Update Data
+	// Handle Change
+	onChange = (name: string, value: string | number | boolean | Date | null) => {
 		this.setState(state => ({
 			data: {
 				...state.data,
-				...update
-			}
-		}));
-	}
-
-	// Handle Select Change
-	onChangeSelect: React.ChangeEventHandler<HTMLSelectElement> = (event) => {
-		const update: ChangeUpdate = {};
-
-		// Field Name
-		let name = event.target.id.match(/.+(?=Field)/)?.[0] ?? null;
-		if (name === null) return;
-
-		if (name === 'crash') name = 'crash_type';
-		if (name === 'road') name = 'road_type';
-
-
-		// @ts-ignore Records
-		let records = this.state.records[name + 's'];
-
-		if (name === 'crash_type') records = this.state.records.crashTypes;
-		if (name === 'road_type') records = this.state.records.roadTypes;
-
-		// Find Record ID
-		update[name + '_id'] = records.find((record: { name: string }) =>
-			record.name === event.target.value
-		).id;
-
-		// Update Data
-		this.setState(state => ({
-			data: {
-				...state.data,
-				...update
+				[name]: value
 			}
 		}));
 	}
@@ -325,11 +195,6 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 			.finally(() => setTimeout(() => this.setState({ status: [null, ''] }), 10 * 1000));
 
 		event.preventDefault();
-	}
-
-	// Filter Number Inputs
-	onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-		if (['e', 'E', '+', '-', '.'].includes(event.key)) event.preventDefault();
 	}
 }
 
