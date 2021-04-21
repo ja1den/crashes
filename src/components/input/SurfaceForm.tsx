@@ -19,7 +19,7 @@ const SurfaceForm: React.FC = () => {
 	// Handle Submit
 	const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/data/surfaces', data)
+		axios.post('/api/surfaces', data)
 			.then(() => setStatus([1, 'Record created successfully.']))
 			.catch(err => {
 				if (err.response.status === 409) {

@@ -19,7 +19,7 @@ const CurveForm: React.FC = () => {
 	// Handle Submit
 	const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/data/curves', data)
+		axios.post('/api/curves', data)
 			.then(() => setStatus([1, 'Record created successfully.']))
 			.catch(err => {
 				if (err.response.status === 409) {

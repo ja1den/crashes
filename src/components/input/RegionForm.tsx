@@ -19,7 +19,7 @@ const RegionForm: React.FC = () => {
 	// Handle Submit
 	const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/data/regions', data)
+		axios.post('/api/regions', data)
 			.then(() => setStatus([1, 'Record created successfully.']))
 			.catch(err => {
 				if (err.response.status === 409) {

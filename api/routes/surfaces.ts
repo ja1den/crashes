@@ -1,9 +1,9 @@
 // Import
 import { Request, Response } from 'express';
 
-import mysql from '../../lib/mysql';
+import mysql from '../lib/mysql';
 
-import { curve } from '../../../src/lib/models';
+import { surface } from '../../src/lib/models';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -12,10 +12,10 @@ export default async (req: Request, res: Response) => {
 		case 'GET':
 			try {
 				// Count Records
-				const count = (await mysql.query('SELECT COUNT(*) FROM curves'))[0][0]['COUNT(*)'];
+				const count = (await mysql.query('SELECT COUNT(*) FROM surfaces'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = 'SELECT * FROM curves ORDER BY id';
+				let sql = 'SELECT * FROM surfaces ORDER BY id';
 
 				// Pagination
 				if (req.query.page !== undefined) {
@@ -68,12 +68,12 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (curve.validate(req.body).error !== undefined) {
+				if (surface.validate(req.body).error !== undefined) {
 					return res.status(400).end();
 				}
 
 				// Execute SQL
-				await mysql.query('INSERT INTO curves VALUES (NULL, ?)', [req.body.name]);
+				await mysql.query('INSERT INTO surfaces VALUES (NULL, ?)', [req.body.name]);
 
 				// Send Response
 				res.status(201).end();

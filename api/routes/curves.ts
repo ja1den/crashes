@@ -1,9 +1,9 @@
 // Import
 import { Request, Response } from 'express';
 
-import mysql from '../../lib/mysql';
+import mysql from '../lib/mysql';
 
-import { roadType } from '../../../src/lib/models';
+import { curve } from '../../src/lib/models';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -12,10 +12,10 @@ export default async (req: Request, res: Response) => {
 		case 'GET':
 			try {
 				// Count Records
-				const count = (await mysql.query('SELECT COUNT(*) FROM road_types'))[0][0]['COUNT(*)'];
+				const count = (await mysql.query('SELECT COUNT(*) FROM curves'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = 'SELECT * FROM road_types ORDER BY id';
+				let sql = 'SELECT * FROM curves ORDER BY id';
 
 				// Pagination
 				if (req.query.page !== undefined) {
@@ -68,12 +68,12 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (roadType.validate(req.body).error !== undefined) {
+				if (curve.validate(req.body).error !== undefined) {
 					return res.status(400).end();
 				}
 
 				// Execute SQL
-				await mysql.query('INSERT INTO road_types VALUES (NULL, ?)', [req.body.name]);
+				await mysql.query('INSERT INTO curves VALUES (NULL, ?)', [req.body.name]);
 
 				// Send Response
 				res.status(201).end();

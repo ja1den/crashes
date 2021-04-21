@@ -23,7 +23,7 @@ const TablePage: React.FC = () => {
 	useEffect(() => {
 		let mounted = true;
 
-		axios.get('/api/data/' + name + '?page=' + page).then(res => {
+		axios.get('/api/' + name + '?page=' + page).then(res => {
 			if (!mounted) return;
 
 			setRecords(res.data.data);

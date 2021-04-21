@@ -1,15 +1,9 @@
 // Import
-import path from 'path';
-import fs from 'fs';
-
 import { Request, Response } from 'express';
 
-import mysql from '../../lib/mysql';
+import mysql from '../lib/mysql';
 
-import { crash } from '../../../src/lib/models';
-
-// Read File
-const baseSQL = fs.readFileSync(path.resolve(__dirname, '..', '..', 'sql', 'crashes.sql')).toString();
+import { roadType } from '../../src/lib/models';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -18,10 +12,10 @@ export default async (req: Request, res: Response) => {
 		case 'GET':
 			try {
 				// Count Records
-				const count = (await mysql.query('SELECT COUNT(*) FROM crashes'))[0][0]['COUNT(*)'];
+				const count = (await mysql.query('SELECT COUNT(*) FROM road_types'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = baseSQL.trim().replace(';', '');
+				let sql = 'SELECT * FROM road_types ORDER BY id';
 
 				// Pagination
 				if (req.query.page !== undefined) {
@@ -74,38 +68,19 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (crash.validate(req.body).error !== undefined) {
+				if (roadType.validate(req.body).error !== undefined) {
 					return res.status(400).end();
 				}
 
 				// Execute SQL
-				await mysql.query('INSERT INTO crashes VALUES (NULL, ' + '?, '.repeat(17) + '?)', [
-					req.body.region_id,
-					req.body.suburb_id,
-					req.body.units,
-					req.body.fatalities,
-					req.body.injuries,
-					req.body.date.match(/\d{4}-\d{2}-\d{2}/)[0],
-					req.body.time,
-					req.body.speed_limit,
-					req.body.road_type_id,
-					req.body.curve_id,
-					req.body.slope_id,
-					req.body.surface_id,
-					req.body.dry,
-					req.body.raining,
-					req.body.day,
-					req.body.crash_type_id,
-					req.body.alcohol,
-					req.body.drugs
-				]);
+				await mysql.query('INSERT INTO road_types VALUES (NULL, ?)', [req.body.name]);
 
 				// Send Response
 				res.status(201).end();
 			} catch (err) {
-				// Invalid Foreign Key
-				if (err.code === 'ER_NO_REFERENCED_ROW_2') {
-					return res.status(422).end();
+				// Duplicate Entry
+				if (err.code === 'ER_DUP_ENTRY') {
+					return res.status(409).end();
 				}
 
 				// Log

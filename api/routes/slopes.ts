@@ -1,9 +1,9 @@
 // Import
 import { Request, Response } from 'express';
 
-import mysql from '../../lib/mysql';
+import mysql from '../lib/mysql';
 
-import { suburb } from '../../../src/lib/models';
+import { slope } from '../../src/lib/models';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -12,10 +12,10 @@ export default async (req: Request, res: Response) => {
 		case 'GET':
 			try {
 				// Count Records
-				const count = (await mysql.query('SELECT COUNT(*) FROM suburbs'))[0][0]['COUNT(*)'];
+				const count = (await mysql.query('SELECT COUNT(*) FROM slopes'))[0][0]['COUNT(*)'];
 
 				// Generate SQL
-				let sql = 'SELECT * FROM suburbs ORDER BY id';
+				let sql = 'SELECT * FROM slopes ORDER BY id';
 
 				// Pagination
 				if (req.query.page !== undefined) {
@@ -68,15 +68,12 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (suburb.validate(req.body).error !== undefined) {
+				if (slope.validate(req.body).error !== undefined) {
 					return res.status(400).end();
 				}
 
 				// Execute SQL
-				await mysql.query('INSERT INTO suburbs VALUES (NULL, ?, ?)', [
-					req.body.name,
-					req.body.postcode
-				]);
+				await mysql.query('INSERT INTO slopes VALUES (NULL, ?)', [req.body.name]);
 
 				// Send Response
 				res.status(201).end();
