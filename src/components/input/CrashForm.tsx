@@ -79,7 +79,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 	async componentDidMount() {
 		Object.keys(this.state.records).forEach(name => {
 			const pName = name.split(/(?=[A-Z])/).map(x => x.toLowerCase()).join('_');
-			axios.get('/api/' + pName).then(res => {
+			axios.get('/api/data/' + pName).then(res => {
 				this._mounted && this.setState(state => ({
 					data: {
 						...state.data,
@@ -317,7 +317,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 	// Handle Submit
 	onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/crashes', this.state.data)
+		axios.post('/api/data/crashes', this.state.data)
 			.then(() => this.setState({ status: [1, 'Record created successfully.'] }))
 			.catch(() => {
 				this.setState({ status: [0, 'Internal server error.'] })

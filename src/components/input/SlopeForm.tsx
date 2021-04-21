@@ -17,7 +17,7 @@ const SlopeForm: React.FC = () => {
 	// Handle Submit
 	const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/slopes', data)
+		axios.post('/api/data/slopes', data)
 			.then(() => setStatus([1, 'Record created successfully.']))
 			.catch(err => {
 				if (err.response.status === 409) {

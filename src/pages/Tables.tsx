@@ -18,7 +18,7 @@ const TablesPage: React.FC = () => {
 		let mounted = true;
 
 		names.forEach(name => {
-			axios.get('/api/' + name).then(res => {
+			axios.get('/api/data/' + name).then(res => {
 				if (mounted) setCounts(counts => ({ ...counts, [name]: res.data.count }));
 			});
 		});

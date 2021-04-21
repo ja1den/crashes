@@ -81,7 +81,7 @@ class SuburbForm extends React.Component<object, SuburbForm.State> {
 	// Handle Submit
 	onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/suburbs', this.state.data)
+		axios.post('/api/data/suburbs', this.state.data)
 			.then(() => this.setState({ status: [1, 'Record created successfully.'] }))
 			.catch(err => {
 				if (err.response.status === 409) {

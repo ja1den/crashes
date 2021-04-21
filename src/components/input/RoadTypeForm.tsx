@@ -17,7 +17,7 @@ const RoadTypeForm: React.FC = () => {
 	// Handle Submit
 	const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
 		// Emit and Handle Request
-		axios.post('/api/road_types', data)
+		axios.post('/api/data/road_types', data)
 			.then(() => setStatus([1, 'Record created successfully.']))
 			.catch(err => {
 				if (err.response.status === 409) {

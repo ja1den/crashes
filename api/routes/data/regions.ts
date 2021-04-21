@@ -1,9 +1,9 @@
 // Import
 import { Request, Response } from 'express';
 
-import mysql from '../lib/mysql';
+import mysql from '../../lib/mysql';
 
-import { region } from '../../src/lib/models';
+import { region } from '../../../src/lib/models';
 
 // Export
 export default async (req: Request, res: Response) => {
