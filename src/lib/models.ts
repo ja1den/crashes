@@ -8,6 +8,7 @@ export interface CrashType {
 }
 
 export const crashType = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });
 
@@ -35,6 +36,7 @@ export interface Crash {
 }
 
 export const crash = Joi.object({
+	id: Joi.number().positive(),
 	region_id: Joi.number().required(),
 	suburb_id: Joi.number().required(),
 	units: Joi.number().required(),
@@ -44,11 +46,11 @@ export const crash = Joi.object({
 	time: Joi.string().regex(/\d{2}:\d{2}/).required(),
 	speed_limit: Joi.number().required(),
 	road_type_id: Joi.number().required(),
-	curve_id: Joi.number().required(),
-	slope_id: Joi.number().required(),
-	surface_id: Joi.number().required(),
-	dry: Joi.boolean().required(),
-	raining: Joi.boolean().required(),
+	curve_id: Joi.number().allow(null).required(),
+	slope_id: Joi.number().allow(null).required(),
+	surface_id: Joi.number().allow(null).required(),
+	dry: Joi.boolean().allow(null).required(),
+	raining: Joi.boolean().allow(null).required(),
 	day: Joi.boolean().required(),
 	crash_type_id: Joi.number().required(),
 	alcohol: Joi.boolean().required(),
@@ -62,6 +64,7 @@ export interface Curve {
 }
 
 export const curve = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });
 
@@ -72,6 +75,7 @@ export interface Region {
 }
 
 export const region = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });
 
@@ -82,6 +86,7 @@ export interface RoadType {
 }
 
 export const roadType = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });
 
@@ -92,6 +97,7 @@ export interface Slope {
 }
 
 export const slope = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });
 
@@ -103,6 +109,7 @@ export interface Suburb {
 }
 
 export const suburb = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required(),
 	postcode: Joi.number().required()
 });
@@ -114,5 +121,6 @@ export interface Surface {
 }
 
 export const surface = Joi.object({
+	id: Joi.number().positive(),
 	name: Joi.string().max(255).required()
 });

@@ -36,10 +36,10 @@ $enable-semantic-container: true;
 	}
 }
 
-/* Input Page */
+/* Input Page, Upload Page */
 
-#input article {
-	form {
+#input, #upload {
+	article form {
 		.grid {
 			grid-row-gap: 0;
 
