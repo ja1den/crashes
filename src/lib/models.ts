@@ -19,7 +19,7 @@ export interface Crash {
 	units: number;
 	fatalities: number;
 	injuries: number;
-	date: Date | null;
+	date: string;
 	time: string;
 	speed_limit: number;
 	road_type_id: number;
@@ -40,7 +40,7 @@ export const crash = Joi.object({
 	units: Joi.number().required(),
 	fatalities: Joi.number().required(),
 	injuries: Joi.number().required(),
-	date: Joi.date().required(),
+	date: Joi.string().regex(/\d{4}-\d{2}-01/).required(),
 	time: Joi.string().regex(/\d{2}:\d{2}/).required(),
 	speed_limit: Joi.number().required(),
 	road_type_id: Joi.number().required(),

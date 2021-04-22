@@ -47,7 +47,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 				units: NaN,
 				fatalities: NaN,
 				injuries: NaN,
-				date: null,
+				date: '',
 				time: '',
 				speed_limit: NaN,
 				road_type_id: NaN,
@@ -97,7 +97,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 	}
 
 	render() {
-		const { status, records } = this.state;
+		const { status, data, records } = this.state;
 
 		// Component HTML 
 		return (
@@ -162,12 +162,12 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 						<Form.BooleanInput name={['drugs', 'Drugs Involved']} onChange={this.onChange} />
 					</fieldset>
 
-					<button type='submit' disabled={crash.validate(this.state.data).error !== undefined}>Submit</button>
+					<button type='submit' disabled={crash.validate(data).error !== undefined}>Submit</button>
 
-					{this.state.status[0] !== null && (
+					{status[0] !== null && (
 						!!status[0]
-							? <ins>{this.state.status[1]}</ins>
-							: <del>{this.state.status[1]}</del>
+							? <ins>{status[1]}</ins>
+							: <del>{status[1]}</del>
 					)}
 				</form>
 			</article>

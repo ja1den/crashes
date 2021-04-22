@@ -68,7 +68,7 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (suburb.validate(req.body).error !== undefined) {
+				if (suburb.validate(req.body, { convert: false }).error !== undefined) {
 					return res.status(400).end();
 				}
 

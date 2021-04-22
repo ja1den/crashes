@@ -74,7 +74,7 @@ export default async (req: Request, res: Response) => {
 		case 'POST':
 			try {
 				// Joi
-				if (crash.validate(req.body).error !== undefined) {
+				if (crash.validate(req.body, { convert: false }).error !== undefined) {
 					return res.status(400).end();
 				}
 
@@ -85,7 +85,7 @@ export default async (req: Request, res: Response) => {
 					req.body.units,
 					req.body.fatalities,
 					req.body.injuries,
-					req.body.date.match(/\d{4}-\d{2}-\d{2}/)[0],
+					req.body.date,
 					req.body.time,
 					req.body.speed_limit,
 					req.body.road_type_id,

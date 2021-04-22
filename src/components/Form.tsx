@@ -7,9 +7,7 @@ declare namespace Form {
 		onSubmit: React.FormEventHandler<HTMLFormElement>;
 	}
 
-	export interface State<T> {
-		data: T;
-	}
+	export interface State<T> { data: T }
 
 	export interface InputProps<T> {
 		name: [string, string];
@@ -108,25 +106,21 @@ class Form extends React.Component<Form.Props> {
 	}
 
 	// Date Input
-	static DateInput = class DateInput extends React.Component<Form.InputProps<Date | null>, Form.State<Date | null>> {
-		state = { data: null };
+	static DateInput = class DateInput extends React.Component<Form.InputProps<string>, Form.State<string>> {
+		state = { data: '' };
 
 		// Component HTML
 		render = () => (
 			<label htmlFor={this.props.name[0]}>
 				{this.props.name[1]}
-				<input type='month' id={this.props.name[0]} aria-invalid={this.state.data === null} onChange={this.onChange} />
+				<input type='month' id={this.props.name[0]} aria-invalid={this.state.data === ''} onChange={this.onChange} />
 			</label>
 		);
 
 		// Handle Change
 		onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-			const data = e.target.value !== ''
-				? new Date(e.target.value)
-				: null;
-
-			this.props.onChange(this.props.name[0], data);
-			this.setState({ data });
+			this.props.onChange(this.props.name[0], e.target.value + '-01');
+			this.setState({ data: e.target.value + '-01' });
 		}
 	}
 
@@ -153,8 +147,6 @@ class Form extends React.Component<Form.Props> {
 	static SelectInput = class SelectInput extends React.Component<Form.SelectInput.Props, Form.State<number>> {
 		constructor(props: Form.SelectInput.Props) {
 			super(props);
-
-			console.log(props.options);
 
 			this.state = {
 				data: props.options[0]?.[0]
@@ -188,6 +180,37 @@ class Form extends React.Component<Form.Props> {
 
 			this.props.onChange(this.props.name[0], data);
 			this.setState({ data });
+		}
+	}
+
+	// File Input
+	static FileInput = class TimeInput extends React.Component<Form.InputProps<string>, Form.State<string>> {
+		state = { data: '' };
+
+		// Component HTML
+		render = () => (
+			<label htmlFor={this.props.name[0]}>
+				{this.props.name[1]}
+				<input type='file' id={this.props.name[0]} accept='.csv' onChange={this.onChange} />
+			</label>
+		);
+
+		// Handle Change
+		onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+			if (e.target.files?.[0] === undefined) return;
+			if (e.target.files?.[0].name.match(/.+.csv$/) === null) return;
+
+			// Read File
+			const reader = new FileReader();
+
+			reader.onload = async () => {
+				const data = reader.result as string;
+
+				this.props.onChange(this.props.name[0], data);
+				this.setState({ data });
+			};
+
+			reader.readAsText(e.target.files[0]);
 		}
 	}
 }
