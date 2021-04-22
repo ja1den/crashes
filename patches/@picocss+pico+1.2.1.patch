@@ -1,5 +1,19 @@
+diff --git a/node_modules/@picocss/pico/scss/components/_accordion.scss b/node_modules/@picocss/pico/scss/components/_accordion.scss
+index 7c30608..c2bbcd4 100644
+--- a/node_modules/@picocss/pico/scss/components/_accordion.scss
++++ b/node_modules/@picocss/pico/scss/components/_accordion.scss
+@@ -15,9 +15,6 @@ details {
+     cursor: pointer;
+ 
+     // Reset marker
+-    &::-webkit-details-marker {
+-      display: none;
+-    }
+     &::marker {
+       display: none;
+     }
 diff --git a/node_modules/@picocss/pico/scss/layout/_sectioning.scss b/node_modules/@picocss/pico/scss/layout/_sectioning.scss
-index 26f12e3..c7655ac 100644
+index 26f12e3..4a943dc 100644
 --- a/node_modules/@picocss/pico/scss/layout/_sectioning.scss
 +++ b/node_modules/@picocss/pico/scss/layout/_sectioning.scss
 @@ -18,7 +18,7 @@ main {
