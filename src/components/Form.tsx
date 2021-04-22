@@ -197,7 +197,13 @@ class Form extends React.Component<Form.Props> {
 
 		// Handle Change
 		onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-			if (e.target.files?.[0] === undefined) return;
+			// Handle Unset
+			if (e.target.files === null || e.target.files?.length === 0) {
+				this.props.onChange(this.props.name[0], '');
+				return this.setState({ data: '' });
+			}
+
+			// File Type
 			if (e.target.files?.[0].name.match(/.+.csv$/) === null) return;
 
 			// Read File
