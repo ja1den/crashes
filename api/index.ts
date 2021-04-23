@@ -1,5 +1,6 @@
 // Import
 import path from 'path';
+import fs from 'fs';
 
 import minimist from 'minimist';
 import express from 'express';
@@ -23,9 +24,6 @@ async function main() {
 
 	// Express
 	const app = express().use(express.json({ limit: '128mb' }));
-
-	// React
-	app.use(express.static(path.resolve(__dirname, 'public')));
 
 	// Load Routes
 	const paths = getFiles(path.resolve(__dirname, 'routes'));
@@ -56,6 +54,10 @@ async function main() {
 		// Bind Route
 		app.all('/api' + name, method);
 	}
+
+	// React
+	app.use(express.static(path.resolve(__dirname, '..', 'public')));
+	app.use((_req, res) => res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html')));
 
 	// Listen
 	app.listen(port, () => {

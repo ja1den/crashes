@@ -6,13 +6,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY patches ./patches
+
 RUN npm install
 
 COPY . .
 
 RUN npm run build
 
-# # Production
+# Production
 
 FROM node:alpine
 
@@ -22,6 +24,6 @@ COPY package*.json ./
 
 COPY --from=0 /app/build ./build
 
-RUN npm install --production
+RUN npm install --production --ignore-script
 
-CMD node build/index.js
+CMD node build/api/index.js --port $PORT
