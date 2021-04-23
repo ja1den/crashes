@@ -22,19 +22,17 @@ async function main() {
 		: 3000;
 
 	// Express
-	const app = express();
-
-	app.use(express.json({ limit: '64mb' }));
+	const app = express().use(express.json({ limit: '128mb' }));
 
 	// React
 	app.use(express.static(path.resolve(__dirname, 'public')));
 
 	// Load Routes
-	const routes = getFiles(path.resolve(__dirname, 'routes'));
+	const paths = getFiles(path.resolve(__dirname, 'routes'));
 
-	for (const route of routes) {
+	for (const path of paths) {
 		// Route Name
-		let name = route.match(/routes(?<name>\/.+)\..+/)?.groups?.name!;
+		let name = path.match(/routes(?<name>\/.+)\..+/)?.groups?.name!;
 
 		// Index Route
 		if (name.endsWith('index')) {
@@ -51,7 +49,7 @@ async function main() {
 		}
 
 		// Import Method
-		const { default: method } = await import(route);
+		const { default: method } = await import(path);
 
 		if (typeof method !== 'function') continue;
 

@@ -2,7 +2,7 @@
 import mysql from 'mysql2';
 
 // MySQL
-const connection = mysql.createPool({
+const connection = mysql.createConnection({
 	host: process.env.DB_HOST,
 	port: parseInt(process.env.DB_PORT ?? ''),
 

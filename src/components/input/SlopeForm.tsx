@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { slope, Slope } from 'lib/models';
+import { slopes, Slope } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -40,7 +40,7 @@ const SlopeForm: React.FC = () => {
 
 			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-			<button type='submit' disabled={slope.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={slopes.schema.validate(data).error !== undefined}>Submit</button>
 
 			{status[0] !== null && (
 				!!status[0]

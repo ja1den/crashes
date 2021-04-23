@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { crashType, CrashType } from 'lib/models';
+import { crashTypes, CrashType } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -40,7 +40,7 @@ const CrashTypeForm: React.FC = () => {
 
 			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-			<button type='submit' disabled={crashType.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={crashTypes.schema.validate(data).error !== undefined}>Submit</button>
 
 			{status[0] !== null && (
 				!!status[0]

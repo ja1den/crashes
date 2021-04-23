@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { curve, Curve } from 'lib/models';
+import { curves, Curve } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -40,7 +40,7 @@ const CurveForm: React.FC = () => {
 
 			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-			<button type='submit' disabled={curve.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={curves.schema.validate(data).error !== undefined}>Submit</button>
 
 			{status[0] !== null && (
 				!!status[0]

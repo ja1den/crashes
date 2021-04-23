@@ -19,7 +19,7 @@ export default async (req: Request, res: Response) => {
 
 	// Numbers
 	for (const key in data) {
-		data[key] = parseInt(data[key]);
+		data[key] = parseInt(data[key] ?? '0');
 	}
 
 	// Send Response

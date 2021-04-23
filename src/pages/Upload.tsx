@@ -6,22 +6,20 @@ import Joi from 'joi';
 
 import Form from 'components/Form';
 
-import { crashType, crash, curve, region, roadType, slope, suburb, surface } from 'lib/models';
 import toTitle from 'lib/toTitle';
+import models from 'lib/models';
 
 // Type
 declare namespace UploadPage {
 	export interface State {
 		status: [number | null, string];
 		data: {
-			table: number;
+			model: number;
 			content: string | null;
 			truncate: boolean;
-			id: boolean;
+			append: boolean;
 		};
 	}
-
-	export interface Table { name: string; columns: string[]; schema: Joi.Schema }
 
 	export interface Record {
 		[key: string]: string | number | boolean | null;
@@ -30,23 +28,11 @@ declare namespace UploadPage {
 
 // Form Schema
 const schema = Joi.object({
-	table: Joi.number().required(),
+	model: Joi.number().required(),
 	content: Joi.string().required(),
 	truncate: Joi.boolean().required(),
-	id: Joi.boolean().required()
+	append: Joi.boolean().required()
 });
-
-// Tables
-const tables: UploadPage.Table[] = [
-	{ name: 'crash_types', columns: ['ID', 'Name'], schema: crashType },
-	{ name: 'crashes', columns: ['ID', 'Region ID', 'Suburb ID', 'Units', 'Fatalities', 'Injuries', 'Date', 'Time', 'Speed Limit', 'Road Type ID', 'Curve ID', 'Slope ID', 'Surface ID', 'Dry', 'Raining', 'Day', 'Crash Type ID', 'Alcohol', 'Drugs'], schema: crash },
-	{ name: 'curves', columns: ['ID', 'Name'], schema: curve },
-	{ name: 'regions', columns: ['ID', 'Name'], schema: region },
-	{ name: 'road_types', columns: ['ID', 'Name'], schema: roadType },
-	{ name: 'slopes', columns: ['ID', 'Name'], schema: slope },
-	{ name: 'suburbs', columns: ['ID', 'Name', 'Postcode'], schema: suburb },
-	{ name: 'surfaces', columns: ['ID', 'Name'], schema: surface }
-];
 
 // Upload Component
 class UploadPage extends React.Component<object, UploadPage.State> {
@@ -56,16 +42,17 @@ class UploadPage extends React.Component<object, UploadPage.State> {
 		this.state = {
 			status: [null, ''],
 			data: {
-				table: 0,
+				model: 0,
 				content: '',
 				truncate: true,
-				id: false
+				append: false
 			}
 		};
 	}
 
 	async componentDidUpdate(_prevProps: object, prevState: UploadPage.State) {
-		if (prevState.status[0] === null && this.state.status[0] !== null) setTimeout(() => this.setState({ status: [null, ''] }), 10 * 1000);
+		if (prevState.status[0] !== 0 && this.state.status[0] === 0) setTimeout(() => this.setState({ status: [null, ''] }), 10 * 1000);
+		if (prevState.status[0] !== 1 && this.state.status[0] === 1) setTimeout(() => this.setState({ status: [null, ''] }), 10 * 1000);
 	}
 
 	render() {
@@ -82,20 +69,20 @@ class UploadPage extends React.Component<object, UploadPage.State> {
 				<Form onSubmit={this.onSubmit}>
 					<h6>Upload Comma Separated Data</h6>
 
-					<Form.SelectInput name={['table', 'Target Table']} options={tables.reduce((arr: [number, string][], table: UploadPage.Table, index: number) => (
-						[...arr, [index, toTitle(table.name)]] as [number, string][]
+					<Form.SelectInput name={['model', 'Target Table']} options={Object.entries(models).reduce((arr: [number, string][], entry, index) => (
+						[...arr, [index, toTitle(entry[1].name)] as [number, string]]
 					), [])} onChange={this.onChange} />
 
 					<Form.FileInput name={['content', 'File']} onChange={this.onChange} />
 
 					<fieldset>
 						<Form.BooleanInput name={['truncate', 'Truncate Table']} onChange={this.onChange} checked />
-						<Form.BooleanInput name={['id', 'Ignore ID']} onChange={this.onChange} />
+						<Form.BooleanInput name={['append', 'Ignore ID']} onChange={this.onChange} />
 					</fieldset>
 
-					<button type='submit' disabled={schema.validate(data).error !== undefined}>Submit</button>
+					<button type='submit' disabled={schema.validate(data).error !== undefined || status[0] === -1}>Submit</button>
 
-					{status[0] !== null && (
+					{status[0] !== null && status[0] !== -1 && (
 						!!status[0]
 							? <ins>{status[1]}</ins>
 							: <del>{status[1]}</del>
@@ -119,60 +106,68 @@ class UploadPage extends React.Component<object, UploadPage.State> {
 	onSubmit: React.FormEventHandler<HTMLFormElement> = async (event) => {
 		event.preventDefault();
 
+		// Disable Button
+		this.setState({ status: [-1, ''] });
+
 		// Extract Lines
 		const lines = this.state.data.content?.trim().split('\n').map(line => line.split(',').map(entry => entry.trim()));
 		if (lines === undefined) return;
 
-		// Find Table Entry
-		const table = tables[this.state.data.table];
+		// Find Model
+		const model = Object.entries(models)[this.state.data.model][1];
 
 		// Compare Columns
-		for (let i = 0; i < Math.max(table.columns.length, lines[0].length); i++) {
-			if (table.columns[i] === undefined) {
-				this.setState({ status: [0, 'The column \'' + lines[0][i] + '\' is superfluous.'] });
+		for (let i = 0; i < Math.max(model.properties.length, lines[0].length); i++) {
+			const m = toTitle(model.properties[i] ?? '') || model.properties[i];
+			const l = lines[0][i];
+
+			if (m === undefined) {
+				this.setState({ status: [0, 'The column \'' + l + '\' is superfluous.'] });
 				return;
 			}
 
-			if (lines[0][i] === undefined) {
-				this.setState({ status: [0, 'The column \'' + table.columns[i] + '\' is missing.'] });
+			if (l === undefined) {
+				this.setState({ status: [0, 'The column \'' + m + '\' is missing.'] });
 				return;
 			}
 
-			if (table.columns[i] !== lines[0][i]) {
-				this.setState({ status: [0, 'The column \'' + lines[0][i] + '\' does not match \'' + table.columns[i] + '\'.'] });
+			if (m !== l) {
+				this.setState({ status: [0, 'The column \'' + l + '\' does not match \'' + m + '\'.'] });
 				return;
 			}
 		}
 
 		lines.shift();
 
-		// Column Names to Property Names
-		const columns = table.columns.map(column => column.toLowerCase().replace(/ /g, '_'));
-
-		// Strings to Columns
+		// Parse Records
 		const records: UploadPage.Record[] = [];
 
-		for (const line of lines) {
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			// String to Object
 			const record: UploadPage.Record = {};
 
-			for (let i = 0; i < columns.length; i++) {
-				let parsed: string | number | boolean | null = line[i];
+			for (let j = 0; j < model.properties.length; j++) {
+				const property = model.properties[j];
 
-				// String to Number / Boolean
-				if (/(_?id)|units|fatalities|injuries|speed_limit|postcode/.test(columns[i])) parsed = parseInt(line[i]);
-				if (/dry|raining|day|alcohol|drugs/.test(columns[i])) parsed = /[01]/.test(line[i]) ? !!+line[i] : null;
+				let parsed: string | number | boolean | null = line[j];
 
-				// Parse NULL
-				if (line[i] === 'NULL') parsed = null;
+				// Numbers and Booleans
+				if (/(_?id)|units|fatalities|injuries|speed_limit|postcode/.test(property)) parsed = parseInt(line[j]);
+				if (/dry|raining|day|alcohol|drugs/.test(property)) parsed = /[01]/.test(line[j]) ? !!+line[j] : null;
 
-				record[columns[i]] = parsed;
+				// NULL
+				if (line[j] === 'NULL') parsed = null;
+
+				record[property] = parsed;
 			}
 
 			// Joi
-			const { error } = table.schema.validate(record, { convert: false });
+			const { error } = model.schema.validate(record, { convert: false });
 
 			if (error !== undefined) {
-				this.setState({ status: [0, 'Record ' + line[0] + ': ' + error.message.replace(/"/g, '\'').replace(/pattern:.+?$/, 'pattern') + '.'] });
+				this.setState({ status: [0, 'Line ' + (i + 1) + ': ' + error.message.replace(/"/g, '\'').replace(/pattern:.+?$/, 'pattern') + '.'] });
 				return;
 			}
 
@@ -180,11 +175,33 @@ class UploadPage extends React.Component<object, UploadPage.State> {
 			records.push(record);
 		}
 
-		console.log(records);
+		// Request Parameters
+		const params: { truncate?: string, append?: string } = {};
+
+		if (this.state.data.truncate) params.truncate = '1';
+		if (this.state.data.append) params.append = '1';
 
 		// Emit and Handle Request
-		axios.post('/api/crashes', records).then(() => this.setState({ status: [1, 'Records created successfully.'] }))
-			.catch(() => this.setState({ status: [0, 'Internal server error.'] }));
+		axios.post('/api/' + model.name, records, { params }).then(() => this.setState({ status: [1, 'Records created successfully.'] }))
+			.catch(err => {
+				switch (err.response.status) {
+					case 409:
+						this.setState({ status: [0, 'Duplicate record exists.'] });
+						break;
+
+					case 422:
+						this.setState({ status: [0, 'Invalid foreign key.'] });
+						break;
+
+					case 403:
+						this.setState({ status: [0, 'Illegal truncate.'] });
+						break;
+
+					default:
+						this.setState({ status: [0, 'Internal server error.'] });
+						break;
+				}
+			});
 	}
 }
 

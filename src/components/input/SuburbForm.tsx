@@ -2,7 +2,7 @@
 import React from 'react';
 import axios from 'axios';
 
-import { suburb, Suburb } from 'lib/models';
+import { suburbs, Suburb } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -39,7 +39,7 @@ class SuburbForm extends React.Component<object, SuburbForm.State> {
 				<Form.StringInput name={['name', 'Name']} onChange={this.onChange} />
 				<Form.NumberInput name={['postcode', 'Postcode']} onChange={this.onChange} />
 
-				<button type='submit' disabled={suburb.validate(data).error !== undefined}>Submit</button>
+				<button type='submit' disabled={suburbs.schema.validate(data).error !== undefined}>Submit</button>
 
 				{status[0] !== null && (
 					!!status[0]

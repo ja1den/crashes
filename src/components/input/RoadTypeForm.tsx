@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { roadType, RoadType } from 'lib/models';
+import { roadTypes, RoadType } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -40,7 +40,7 @@ const RoadTypeForm: React.FC = () => {
 
 			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-			<button type='submit' disabled={roadType.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={roadTypes.schema.validate(data).error !== undefined}>Submit</button>
 
 			{status[0] !== null && (
 				!!status[0]

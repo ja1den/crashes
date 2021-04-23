@@ -2,7 +2,7 @@
 import React from 'react';
 import axios from 'axios';
 
-import { crash, Crash } from 'lib/models';
+import { crashes, Crash } from 'lib/models';
 import {
 	CrashType,
 	Curve,
@@ -75,17 +75,18 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 
 	// Read Records
 	async componentDidMount() {
-		Object.keys(this.state.records).forEach(name => {
-			const pName = name.split(/(?=[A-Z])/).map(x => x.toLowerCase()).join('_');
-			axios.get('/api/' + pName).then(res => {
+		Object.keys(this.state.records).forEach(key => {
+			const name = key.split(/(?=[A-Z])/).map(x => x.toLowerCase()).join('_');
+
+			axios.get('/api/' + name).then(res => {
 				this._mounted && this.setState(state => ({
 					data: {
 						...state.data,
-						[pName.slice(0, -1) + '_id']: res.data.data[0].id
+						[name.slice(0, -1) + '_id']: res.data.data[0].id
 					},
 					records: {
 						...state.records,
-						[name]: res.data.data
+						[key]: res.data.data
 					}
 				}))
 			});
@@ -162,7 +163,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 						<Form.BooleanInput name={['drugs', 'Drugs Involved']} onChange={this.onChange} />
 					</fieldset>
 
-					<button type='submit' disabled={crash.validate(data).error !== undefined}>Submit</button>
+					<button type='submit' disabled={crashes.schema.validate(data).error !== undefined}>Submit</button>
 
 					{status[0] !== null && (
 						!!status[0]

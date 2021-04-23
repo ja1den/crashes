@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-import { surface, Surface } from 'lib/models';
+import { surfaces, Surface } from 'lib/models';
 
 import Form from 'components/Form';
 
@@ -40,7 +40,7 @@ const SurfaceForm: React.FC = () => {
 
 			<Form.StringInput name={['name', 'Name']} onChange={onChange} />
 
-			<button type='submit' disabled={surface.validate(data).error !== undefined}>Submit</button>
+			<button type='submit' disabled={surfaces.schema.validate(data).error !== undefined}>Submit</button>
 
 			{status[0] !== null && (
 				!!status[0]

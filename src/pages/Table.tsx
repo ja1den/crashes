@@ -2,7 +2,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { useHistory, useLocation } from 'react-router-dom';
+import { Redirect, useHistory, useLocation } from 'react-router-dom';
 
 import toDateString from 'lib/toDateString';
 import toTitle from 'lib/toTitle';
@@ -23,15 +23,14 @@ const TablePage: React.FC = () => {
 	useEffect(() => {
 		let mounted = true;
 
+		// Request Data
 		axios.get('/api/' + name + '?page=' + page).then(res => {
 			if (!mounted) return;
 
 			setRecords(res.data.data);
 			setCount(res.data.count);
 		}).catch(err => {
-			if (Math.floor(err.response.status / 100) === 4) {
-				return history.push(location.pathname + '?page=1');
-			}
+			if (err.response.status === 404) return history.push('/table');
 		});
 
 		return () => { mounted = false };
@@ -72,17 +71,17 @@ const TablePage: React.FC = () => {
 										{Object.keys(record).map(key => {
 											let str = record[key];
 
-											if (['dry', 'raining', 'day', 'alcohol', 'drugs'].includes(key)) {
-												str = Boolean(record[key]).toString().slice(0, 1).toUpperCase();
-											}
+											if (/dry|raining|day|alcohol|drugs/.test(key)) str = record[key]?.toString().slice(0, 1).toUpperCase();
 
 											if (key === 'date') {
-												str = toDateString(new Date(record[key]));
+												str = toDateString(record[key]);
 											}
 
 											if (key === 'time') {
 												str = record[key].toString().match(/\d+:\d+/)[0];
 											}
+
+											if (record[key] === null) str = '.';
 
 											return (
 												<td key={key}>{str}</td>
@@ -95,6 +94,8 @@ const TablePage: React.FC = () => {
 					</figure>
 				</Fragment>
 			)}
+
+			{page > Math.ceil(count / 25) && <Redirect to={location.pathname + '?page=1'} />}
 		</main>
 	);
 }

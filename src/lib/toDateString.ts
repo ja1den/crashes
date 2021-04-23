@@ -1,9 +1,13 @@
 /**
- * Format a date object.
- * @param input The date object to format.
- * @returns The formatted date string.
+ * Format a date string.
+ * @param input The string to format.
+ * @returns The formatted string.
  */
-const toDateString = (input: Date) => {
+const toDateString = (input: string) => {
+	if (!/\d+-\d+/.test(input)) return input;
+
+	const match = input.toString().match(/\d+/g);
+
 	const months = [
 		'January',
 		'February',
@@ -19,7 +23,7 @@ const toDateString = (input: Date) => {
 		'December'
 	];
 
-	return months[input.getMonth()] + ' ' + input.getFullYear();
+	return months[parseInt(match![1]) - 1] + ' ' + match![0];
 }
 
 // Export

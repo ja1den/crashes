@@ -5,9 +5,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import toTitle from 'lib/toTitle';
+import models from 'lib/models';
 
-// Table Names
-const names = ['crashes', 'crash_types', 'curves', 'regions', 'road_types', 'slopes', 'suburbs', 'surfaces'];
+// Names
+const names = Object.entries(models).map(entry => entry[1].name);
 
 // Tables Component
 const TablesPage: React.FC = () => {
@@ -18,10 +19,10 @@ const TablesPage: React.FC = () => {
 		let mounted = true;
 
 		names.forEach(name => {
-			axios.get('/api/' + name).then(res => {
+			axios.get('/api/' + name + '?page=1&size=0').then(res => {
 				if (mounted) setCounts(counts => ({ ...counts, [name]: res.data.count }));
 			});
-		});
+		})
 
 		return () => { mounted = false };
 	}, []);
