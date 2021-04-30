@@ -50,7 +50,7 @@ const TablesPage: React.FC = () => {
 							<tr key={name}>
 								<td>{toTitle(name)}</td>
 								<td>{counts[name] ?? <small>Loading...</small>}</td>
-								<td><Link to={'/table/' + name + '?page=1'}>Link</Link></td>
+								<td><Link to={'/table/' + name + '?page=1'}>Preview</Link></td>
 							</tr>
 						))}
 					</tbody>
