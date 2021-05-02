@@ -41,16 +41,14 @@ const TablesPage: React.FC = () => {
 						<tr>
 							<th scope='col'>Name</th>
 							<th scope='col'>Records</th>
-							<th scope='col'>Preview</th>
 						</tr>
 					</thead>
 
 					<tbody>
 						{names.map(name => (
 							<tr key={name}>
-								<td>{toTitle(name)}</td>
+								<td><Link to={'/tables/' + name + '?page=1'}>{toTitle(name)}</Link></td>
 								<td>{counts[name] ?? <small>Loading...</small>}</td>
-								<td><Link to={'/table/' + name + '?page=1'}>Preview</Link></td>
 							</tr>
 						))}
 					</tbody>

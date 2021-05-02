@@ -25,18 +25,18 @@ const Root: React.FC = () => {
 				</ul>
 				<ul>
 					<li><Link to='/'>Home</Link></li>
-					<li><Link to='/table'>Table</Link></li>
+					<li><Link to='/tables'>Tables</Link></li>
 					<li><Link to='/input'>Input</Link></li>
 					<li><Link to='/upload'>Upload</Link></li>
 				</ul>
 			</nav>
 
 			<Switch>
-				<Route path='/table/:name'>
+				<Route path='/tables/:name'>
 					<TablePage />
 				</Route>
 
-				<Route path='/table'>
+				<Route path='/tables'>
 					<TablesPage />
 				</Route>
 
