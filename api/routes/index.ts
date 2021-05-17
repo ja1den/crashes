@@ -3,8 +3,8 @@ import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
 
-// Column Lookup
-const columns = { id: 'COUNT', fatalities: 'SUM', injuries: 'SUM', units: 'SUM' };
+// Schema
+import schema from '../sql/data.json';
 
 // Export
 export default async (req: Request, res: Response) => {
@@ -12,12 +12,12 @@ export default async (req: Request, res: Response) => {
 	if (req.method !== 'GET') return res.status(405).end();
 
 	// Build SQL
-	if (typeof req.query.column !== 'string' || !Object.keys(columns).includes(req.query.column)) return res.status(400).end()
+	if (typeof req.query.column !== 'string' || !Object.keys(schema.columns).includes(req.query.column)) return res.status(400).end();
 
 	const sql = (
 		'SELECT ' +
 		'YEAR(crashes.date) AS year, ' +
-		columns[req.query.column] + '(crashes.' + req.query.column + ')' + ' AS data ' +
+		schema.columns[req.query.column] + '(crashes.' + req.query.column + ')' + ' AS data ' +
 		'FROM ' +
 		'crashes ' +
 		'GROUP BY YEAR(crashes.date)'
