@@ -20,7 +20,7 @@ const HomePage: React.FC = () => {
 	useEffect(() => {
 		let mounted = true;
 
-		axios.get('/api/summary').then(res => {
+		axios.get('/api').then(res => {
 			if (mounted) setSummary(res.data);
 		});
 
