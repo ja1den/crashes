@@ -1,6 +1,6 @@
 # Crash Data
 
-> Database design task for Stage 2 Digital Technologies.
+> Design task for Stage 2 Digital Technologies.
 
 ## Introduction
 
