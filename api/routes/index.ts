@@ -3,34 +3,73 @@ import { Request, Response } from 'express';
 
 import mysql from '../lib/mysql';
 
-// Schema
-import schema from '../sql/data.json';
+// Lookup
+import lookup from '../sql/lookup';
 
 // Export
 export default async (req: Request, res: Response) => {
 	// Invalid Method
 	if (req.method !== 'GET') return res.status(405).end();
 
-	// Build SQL
-	if (typeof req.query.column !== 'string' || !Object.keys(schema.columns).includes(req.query.column)) return res.status(400).end();
+	// Handle Request
+	try {
+		// Parse Columns
+		const columns: string[] = [];
 
-	const sql = (
-		'SELECT ' +
-		'YEAR(crashes.date) AS year, ' +
-		schema.columns[req.query.column] + '(crashes.' + req.query.column + ')' + ' AS data ' +
-		'FROM ' +
-		'crashes ' +
-		'GROUP BY YEAR(crashes.date)'
-	);
+		switch (typeof req.query.columns) {
+			case 'string':
+				// Invalid Column
+				if (!Object.keys(lookup.columns).includes(req.query.columns)) {
+					return res.status(400).end();
+				}
 
-	// Execute SQL
-	const data = (await mysql.query(sql))[0];
+				// Insert
+				columns.push(req.query.columns);
+				break;
 
-	// Parse Data
-	for (const key in data) {
-		data[key].data = parseInt(data[key].data ?? '0');
+			case 'object':
+				// Invalid Type
+				if (!Array.isArray(req.query.columns)) return res.status(400).end();
+
+				// Iterate Columns
+				for (const column of req.query.columns) {
+					if (typeof column !== 'string') return res.status(400).end();
+
+					// Invalid Column
+					if (!Object.keys(lookup.columns).includes(column)) {
+						return res.status(400).end();
+					}
+
+					// Insert
+					columns.push(column);
+				}
+				break;
+		}
+
+		if (columns.length === 0) return res.status(400).end();
+
+		// Build SQL
+		let sql = 'SELECT YEAR(crashes.date) AS \'group\', ';
+
+		sql += columns.map(column => lookup.columns[column].sql + '(crashes.' + column + ') AS ' + lookup.columns[column].alias).join(', ')
+
+		sql += ' FROM crashes GROUP BY YEAR(crashes.date)';
+
+		// Execute SQL
+		const data = (await mysql.query(sql))[0];
+
+		// Parse Data
+		for (const i in data) for (const key in data[i]) {
+			data[i][key] = parseInt(data[i][key] ?? '0');
+		}
+
+		// Send Response
+		res.send(data);
+	} catch (err) {
+		// Log
+		console.error(err);
+
+		// Send Response
+		res.status(500).end();
 	}
-
-	// Send Response
-	res.send(data);
 }
