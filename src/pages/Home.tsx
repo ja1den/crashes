@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+import Chart from 'chart.js';
+
 import toTitle from 'lib/toTitle';
 
 // Type

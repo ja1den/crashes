@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import mysql from '../lib/mysql';
 
 // Lookup
-import lookup from '../sql/lookup';
+import lookup from '../../src/lib/lookup';
 
 // Export
 export default async (req: Request, res: Response) => {
