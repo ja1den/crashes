@@ -21,18 +21,23 @@ export default async (req: Request, res: Response) => {
 
 	// Handle Request
 	try {
+		// Parse Looup
+		const aliases = Object.entries(lookup.columns).reduce((aliases, [name, column]) => ({
+			...aliases, [column.alias]: name
+		}), {});
+
 		// Parse Columns
 		const columns: string[] = [];
 
 		switch (typeof req.query.columns) {
 			case 'string':
 				// Invalid Column
-				if (!Object.keys(lookup.columns).includes(req.query.columns)) {
+				if (aliases[req.query.columns] === undefined) {
 					return res.status(400).end();
 				}
 
 				// Insert
-				columns.push(req.query.columns);
+				columns.push(aliases[req.query.columns]);
 				break;
 
 			case 'object':
@@ -44,12 +49,12 @@ export default async (req: Request, res: Response) => {
 					if (typeof column !== 'string') return res.status(400).end();
 
 					// Invalid Column
-					if (!Object.keys(lookup.columns).includes(column)) {
+					if (aliases[column] === undefined) {
 						return res.status(400).end();
 					}
 
 					// Insert
-					columns.push(column);
+					columns.push(aliases[column]);
 				}
 				break;
 		}

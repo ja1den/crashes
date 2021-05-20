@@ -15,6 +15,17 @@ $enable-semantic-container: true;
 
 @import './components/layout.scss';
 
+/* Home Page */
+
+#home .grid {
+	grid-row-gap: 0;
+
+	@if map-get($breakpoints, "lg") {
+		@media (min-width: map-get($breakpoints, "lg")) {
+			grid-row-gap: var(--spacing-gutter);
+		}
+	}
+}
 
 /* Table Page */
 

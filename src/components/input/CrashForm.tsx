@@ -88,7 +88,7 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 						...state.records,
 						[key]: res.data.data
 					}
-				}))
+				}));
 			});
 		});
 	}
