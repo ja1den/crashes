@@ -6,6 +6,14 @@ import mysql from '../lib/mysql';
 // Lookup
 import lookup from '../../src/lib/lookup';
 
+// Types
+interface ResponseBody {
+	group: string | number;
+	data: {
+		[key: string]: number;
+	};
+}
+
 // Export
 export default async (req: Request, res: Response) => {
 	// Invalid Method
@@ -59,8 +67,16 @@ export default async (req: Request, res: Response) => {
 		const data = (await mysql.query(sql))[0];
 
 		// Parse Data
-		for (const i in data) for (const key in data[i]) {
-			data[i][key] = parseInt(data[i][key] ?? '0');
+		for (const i in data) {
+			const obj = { group: data[i].group, data: {} };
+
+			for (const key in data[i]) {
+				if (key !== 'group') {
+					obj.data[key] = parseInt(data[i][key] ?? '0');
+				}
+			}
+
+			data[i] = obj;
 		}
 
 		// Send Response
