@@ -4,14 +4,12 @@ import { Request, Response } from 'express';
 import mysql from '../lib/mysql';
 
 // Lookup
-import lookup from '../../src/lib/lookup';
+import lookup, { Column } from '../../src/lib/lookup';
 
 // Types
 interface ResponseBody {
-	group: string | number;
-	data: {
-		[key: string]: number;
-	};
+	group: string;
+	data: Record<string, number>;
 }
 
 // Export
@@ -21,23 +19,14 @@ export default async (req: Request, res: Response) => {
 
 	// Handle Request
 	try {
-		// Parse Looup
-		const aliases = Object.entries(lookup.columns).reduce((aliases, [name, column]) => ({
-			...aliases, [column.alias]: name
-		}), {});
-
 		// Parse Columns
-		const columns: string[] = [];
+		const columns: [string, Column][] = [];
 
+		// Type Check
 		switch (typeof req.query.columns) {
 			case 'string':
-				// Invalid Column
-				if (aliases[req.query.columns] === undefined) {
-					return res.status(400).end();
-				}
-
 				// Insert
-				columns.push(aliases[req.query.columns]);
+				columns.push([req.query.columns, null]);
 				break;
 
 			case 'object':
@@ -48,23 +37,28 @@ export default async (req: Request, res: Response) => {
 				for (const column of req.query.columns) {
 					if (typeof column !== 'string') return res.status(400).end();
 
-					// Invalid Column
-					if (aliases[column] === undefined) {
-						return res.status(400).end();
-					}
-
 					// Insert
-					columns.push(aliases[column]);
+					columns.push([column, null]);
 				}
 				break;
 		}
 
 		if (columns.length === 0) return res.status(400).end();
 
+		// Lookup Columns
+		for (const column of columns) {
+			if (lookup.columns[column[0]] === undefined) {
+				return res.status(400).end();
+			}
+
+			// Insert
+			column[1] = lookup.columns[column[0]];
+		}
+
 		// Build SQL
 		let sql = 'SELECT YEAR(crashes.date) AS \'group\', ';
 
-		sql += columns.map(column => lookup.columns[column].sql + '(crashes.' + column + ') AS ' + lookup.columns[column].alias).join(', ')
+		sql += columns.map(column => column[1].sql + '(crashes.' + column[1].name + ') AS ' + column[0]).join(', ');
 
 		sql += ' FROM crashes GROUP BY YEAR(crashes.date)';
 
@@ -73,7 +67,7 @@ export default async (req: Request, res: Response) => {
 
 		// Parse Data
 		for (const i in data) {
-			const obj = { group: data[i].group, data: {} };
+			const obj: ResponseBody = { group: data[i].group, data: {} };
 
 			for (const key in data[i]) {
 				if (key !== 'group') {

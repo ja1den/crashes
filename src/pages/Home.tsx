@@ -2,7 +2,7 @@
 import React from 'react';
 import axios from 'axios';
 
-import { Chart } from 'chart.js';
+import Chart from 'chart.js/auto';
 
 import toTitle from 'lib/toTitle';
 import lookup from 'lib/lookup';
@@ -12,8 +12,6 @@ declare namespace HomePage {
 	export interface State {
 		columns: string[];
 		data?: Data[];
-
-		canvas: React.LegacyRef<HTMLCanvasElement> | null;
 	}
 
 	export interface Data {
@@ -29,18 +27,20 @@ declare namespace HomePage {
 
 // Home Component
 class HomePage extends React.Component<object, HomePage.State> {
-	_chart: Chart | null = null;
 	_mounted = true;
+
+	_canvas: HTMLCanvasElement | null = null;
+	_chart: Chart | null = null;
 
 	constructor(props: object) {
 		super(props);
 
 		this.state = {
-			columns: [Object.values(lookup.columns)[0].alias],
-			canvas: null
+			columns: Object.keys(lookup.columns)
 		}
 	}
 
+	// Request Data
 	componentDidMount() {
 		axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
 			this._mounted && this.setState({ data: res.data });
@@ -51,58 +51,34 @@ class HomePage extends React.Component<object, HomePage.State> {
 		this._mounted = false;
 	}
 
+
 	render() {
-		console.log(this.state.canvas);
+		// Update Chart
+		if (this._chart !== null && this.state.data !== undefined) {
+			const colours = [
+				'338, 78%, 48%',
+				'287, 65%, 40%',
+				'208, 79%, 51%',
+				'123, 41%, 45%'
+			];
 
-		// console.log('cv', this._canvas.current, 'ch', this._chart)
+			this._chart.data = {
+				labels: Object.values(this.state.data).reduce(
+					(labels: string[], entry) => [...labels, entry.group], []
+				),
+				datasets: this.state.columns.map((column, index) => ({
+					label: lookup.columns[column].display,
+					data: this.state.data!.map(
+						entry => entry.data[column as keyof HomePage.Data['data']]
+					),
+					backgroundColor: 'hsl(' + colours[index] + ', 0.2)',
+					borderColor: 'hsl(' + colours[index] + ', 1.0)',
+					borderWidth: 1
+				}))
+			};
 
-		/*
-
-		// Initialise Chart
-		if (this._canvas.current !== null && this._chart === null) {
-			const context = this._canvas.current.getContext('2d');
-
-			console.log('fortnite');
-
-			if (context !== null) {
-				this._chart = new Chart(context, {
-					type: 'bar',
-					data: {
-						labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-						datasets: [{
-							label: '# of Votes',
-							data: [12, 19, 3, 5, 2, 3],
-							backgroundColor: [
-								'rgba(255, 99, 132, 0.2)',
-								'rgba(54, 162, 235, 0.2)',
-								'rgba(255, 206, 86, 0.2)',
-								'rgba(75, 192, 192, 0.2)',
-								'rgba(153, 102, 255, 0.2)',
-								'rgba(255, 159, 64, 0.2)'
-							],
-							borderColor: [
-								'rgba(255, 99, 132, 1)',
-								'rgba(54, 162, 235, 1)',
-								'rgba(255, 206, 86, 1)',
-								'rgba(75, 192, 192, 1)',
-								'rgba(153, 102, 255, 1)',
-								'rgba(255, 159, 64, 1)'
-							],
-							borderWidth: 1
-						}]
-					},
-					options: {
-						scales: {
-							y: {
-								beginAtZero: true
-							}
-						}
-					}
-				});
-			}
+			this._chart.update();
 		}
-
-		*/
 
 		// Component HTML
 		return (
@@ -114,7 +90,9 @@ class HomePage extends React.Component<object, HomePage.State> {
 
 				{this.state.data !== undefined && (
 					<div className='grid'>
-						<canvas ref={this.onRefChange} />
+						<div className='chart'>
+							<canvas ref={this.onRefChange} onMouseDown={(e) => e.preventDefault()} />
+						</div>
 
 						<figure>
 							<table role='grid'>
@@ -144,7 +122,33 @@ class HomePage extends React.Component<object, HomePage.State> {
 		);
 	}
 
-	onRefChange = (node: React.LegacyRef<HTMLCanvasElement>) => this.setState({ canvas: node });
+	onRefChange = (node: HTMLCanvasElement) => {
+		this._canvas = node;
+
+		// Rendering Context
+		const context = this._canvas?.getContext('2d');
+		if (!context) return;
+
+		// Initialise Chart
+		this._chart = new Chart(context, {
+			type: 'line',
+			data: {
+				labels: [], datasets: []
+			},
+			options: {
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				},
+				responsive: true,
+				animation: false
+			}
+		});
+
+		// Update
+		this.forceUpdate();
+	}
 }
 
 // Export

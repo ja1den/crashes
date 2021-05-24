@@ -1,36 +1,36 @@
 // Types
-interface Lookup {
-	columns: {
-		[key: string]: {
-			name: string;
-			sql: string;
-			alias: string;
-		}
-	}
+export interface Lookup {
+	columns: Record<string, Column>;
+}
+
+export interface Column {
+	name: string;
+	display: string;
+	sql: string;
 }
 
 // Lookup
 const lookup: Lookup = {
 	columns: {
-		id: {
-			name: 'Total Crashes',
-			sql: 'COUNT',
-			alias: 'total'
+		total: {
+			name: 'id',
+			display: 'Total Crashes',
+			sql: 'COUNT'
 		},
 		fatalities: {
-			name: 'Fatalities',
-			sql: 'SUM',
-			alias: 'fatalities'
+			name: 'fatalities',
+			display: 'Fatalities',
+			sql: 'SUM'
 		},
 		injuries: {
-			name: 'Injuries',
-			sql: 'SUM',
-			alias: 'injuries'
+			name: 'injuries',
+			display: 'Injuries',
+			sql: 'SUM'
 		},
 		units: {
-			name: 'Units',
-			sql: 'SUM',
-			alias: 'units'
+			name: 'units',
+			display: 'Units',
+			sql: 'SUM'
 		}
 	}
 };
