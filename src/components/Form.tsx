@@ -4,7 +4,7 @@ import React from 'react';
 // Types
 declare namespace Form {
 	export interface Props {
-		onSubmit: React.FormEventHandler<HTMLFormElement>;
+		onSubmit?: React.FormEventHandler<HTMLFormElement>;
 	}
 
 	export interface State<T> { data: T }

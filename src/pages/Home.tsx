@@ -1,11 +1,15 @@
 // Import
-import React from 'react';
+import React, { Fragment } from 'react';
 import axios from 'axios';
 
-import Chart from 'chart.js/auto';
+import { Chart, registerables } from 'chart.js';
 
-import toTitle from 'lib/toTitle';
 import lookup from 'lib/lookup';
+
+import Form from 'components/Form';
+
+// Register Chart.js
+Chart.register(...registerables);
 
 // Types
 declare namespace HomePage {
@@ -17,10 +21,10 @@ declare namespace HomePage {
 	export interface Data {
 		group: string;
 		data: {
-			total?: string;
-			fatalities?: string;
-			injuries?: string;
-			units?: string;
+			total?: number;
+			fatalities?: number;
+			injuries?: number;
+			units?: number;
 		}
 	}
 }
@@ -32,6 +36,13 @@ class HomePage extends React.Component<object, HomePage.State> {
 	_canvas: HTMLCanvasElement | null = null;
 	_chart: Chart | null = null;
 
+	_colours = [
+		'338, 78%, 48%',
+		'287, 65%, 40%',
+		'208, 79%, 51%',
+		'123, 41%, 45%'
+	];
+
 	constructor(props: object) {
 		super(props);
 
@@ -40,28 +51,17 @@ class HomePage extends React.Component<object, HomePage.State> {
 		}
 	}
 
-	// Request Data
 	componentDidMount() {
-		axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
-			this._mounted && this.setState({ data: res.data });
-		});
+		this.requestData();
 	}
 
 	componentWillUnmount() {
 		this._mounted = false;
 	}
 
-
 	render() {
 		// Update Chart
 		if (this._chart !== null && this.state.data !== undefined) {
-			const colours = [
-				'338, 78%, 48%',
-				'287, 65%, 40%',
-				'208, 79%, 51%',
-				'123, 41%, 45%'
-			];
-
 			this._chart.data = {
 				labels: Object.values(this.state.data).reduce(
 					(labels: string[], entry) => [...labels, entry.group], []
@@ -69,15 +69,23 @@ class HomePage extends React.Component<object, HomePage.State> {
 				datasets: this.state.columns.map((column, index) => ({
 					label: lookup.columns[column].display,
 					data: this.state.data!.map(
-						entry => entry.data[column as keyof HomePage.Data['data']]
+						entry => entry.data[column as keyof HomePage.Data['data']] ?? null
 					),
-					backgroundColor: 'hsl(' + colours[index] + ', 0.2)',
-					borderColor: 'hsl(' + colours[index] + ', 1.0)',
+					backgroundColor: 'hsl(' + this._colours[index] + ', 0.2)',
+					borderColor: 'hsl(' + this._colours[index] + ', 1.0)',
 					borderWidth: 1
 				}))
 			};
 
 			this._chart.update();
+		}
+
+		// Table Data
+		const table = {
+			headers: ['Group', ...this.state.columns.map(column => lookup.columns[column].display)],
+			data: this.state.data?.map(entry => ([
+				entry.group, ...this.state.columns.map(column => entry.data[column as keyof HomePage.Data['data']])
+			]))
 		}
 
 		// Component HTML
@@ -88,41 +96,69 @@ class HomePage extends React.Component<object, HomePage.State> {
 					<h3>Data summary.</h3>
 				</hgroup>
 
-				{this.state.data !== undefined && (
+				<Form>
+					<h6>Select Data</h6>
+
 					<div className='grid'>
-						<div className='chart'>
-							<canvas ref={this.onRefChange} onMouseDown={(e) => e.preventDefault()} />
-						</div>
+						{Object.entries(lookup.columns).map(([alias, meta]) => (
+							<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
+						))}
+					</div>
+				</Form>
+
+				{this.state.data !== undefined && (
+					<Fragment>
+						<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
 
 						<figure>
 							<table role='grid'>
 								<thead>
-									<tr>
-										{['Group', ...Object.keys(this.state.data[0].data)].map(key => (
-											<th scope='col' key={key}>{toTitle(key)}</th>
-										))}
-									</tr>
+									<tr>{table.headers.map(name => (<th scope='col' key={name}>{name}</th>))}</tr>
 								</thead>
 
 								<tbody>
-									{Object.values(this.state.data).map(entry => (
-										<tr key={entry.group}>
-											<td>{entry.group}</td>
-											{Object.entries(entry.data).map(([key, value]) => (
-												<td key={key}>{value}</td>
+									{table.data?.map(entry => (
+										<tr key={entry[0]}>
+											{entry.map((point, index) => (
+												<td key={index}>{point}</td>
 											))}
 										</tr>
 									))}
 								</tbody>
 							</table>
 						</figure>
-					</div>
+					</Fragment>
 				)}
 			</main>
 		);
 	}
 
-	onRefChange = (node: HTMLCanvasElement) => {
+	// Request Data
+	requestData() {
+		if (this.state.columns.length !== 0) {
+			axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
+				this._mounted && this.setState({ data: res.data });
+			});
+		}
+	}
+
+	// Handle Change
+	onChange = (name: string, checked: boolean) => {
+		this.setState(state => {
+			const columns = checked
+				? [...state.columns, name]
+				: state.columns.filter(entry => entry !== name)
+
+			columns.sort((a, b) => {
+				return Object.keys(lookup.columns).indexOf(a) - Object.keys(lookup.columns).indexOf(b);
+			});
+
+			return { columns };
+		}, this.requestData);
+	}
+
+	// Handle Reference Update
+	onRefUpdate = (node: HTMLCanvasElement) => {
 		this._canvas = node;
 
 		// Rendering Context
@@ -150,7 +186,8 @@ class HomePage extends React.Component<object, HomePage.State> {
 					}
 				},
 				responsive: true,
-				animation: false
+				animation: false,
+				events: []
 			}
 		});
 
