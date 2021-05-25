@@ -12,9 +12,9 @@ export interface Column {
 // Lookup
 const lookup: Lookup = {
 	columns: {
-		total: {
+		crashes: {
 			name: 'id',
-			display: 'Total Crashes',
+			display: 'Crashes',
 			sql: 'COUNT'
 		},
 		fatalities: {
