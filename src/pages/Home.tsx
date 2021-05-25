@@ -131,13 +131,21 @@ class HomePage extends React.Component<object, HomePage.State> {
 
 		// Initialise Chart
 		this._chart = new Chart(context, {
-			type: 'line',
+			type: 'bar',
 			data: {
 				labels: [], datasets: []
 			},
 			options: {
 				scales: {
+					x: {
+						grid: {
+							color: 'rgba(115, 130, 140, 0.2)'
+						}
+					},
 					y: {
+						grid: {
+							color: 'rgba(115, 130, 140, 0.2)'
+						},
 						beginAtZero: true
 					}
 				},

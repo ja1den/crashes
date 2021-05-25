@@ -58,7 +58,10 @@ export default async (req: Request, res: Response) => {
 		// Build SQL
 		let sql = 'SELECT YEAR(crashes.date) AS \'group\', ';
 
-		sql += columns.map(column => column[1].sql + '(crashes.' + column[1].name + ') AS ' + column[0]).join(', ');
+		for (let i = 0; i < columns.length; i++) {
+			sql += columns[i][1].sql + '(crashes.' + columns[i][1].name + ') AS ' + columns[i][0];
+			sql += i !== columns.length - 1 ? ', ' : '';
+		}
 
 		sql += ' FROM crashes GROUP BY YEAR(crashes.date)';
 
