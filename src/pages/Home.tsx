@@ -1,5 +1,5 @@
 // Import
-import React, { Fragment } from 'react';
+import React from 'react';
 import axios from 'axios';
 
 import { Chart, registerables } from 'chart.js';
@@ -36,13 +36,6 @@ class HomePage extends React.Component<object, HomePage.State> {
 	_canvas: HTMLCanvasElement | null = null;
 	_chart: Chart | null = null;
 
-	_colours = [
-		'338, 78%, 48%',
-		'287, 65%, 40%',
-		'208, 79%, 51%',
-		'123, 41%, 45%'
-	];
-
 	constructor(props: object) {
 		super(props);
 
@@ -71,8 +64,8 @@ class HomePage extends React.Component<object, HomePage.State> {
 					data: this.state.data!.map(
 						entry => entry.data[column as keyof HomePage.Data['data']] ?? null
 					),
-					backgroundColor: 'hsl(' + this._colours[index] + ', 0.2)',
-					borderColor: 'hsl(' + this._colours[index] + ', 1.0)',
+					backgroundColor: 'hsl(' + lookup.columns[column].color + ', 0.2)',
+					borderColor: 'hsl(' + lookup.columns[column].color + ', 1.0)',
 					borderWidth: 1
 				}))
 			};
@@ -96,7 +89,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 					<h3>Data summary.</h3>
 				</hgroup>
 
-				<Form>
+				<article>
 					<h6>Select Data</h6>
 
 					<div className='grid'>
@@ -104,11 +97,13 @@ class HomePage extends React.Component<object, HomePage.State> {
 							<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
 						))}
 					</div>
-				</Form>
+				</article>
 
 				{this.state.data !== undefined && (
-					<Fragment>
-						<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
+					<div className='grid'>
+						<div className='chart'>
+							<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
+						</div>
 
 						<figure>
 							<table role='grid'>
@@ -127,7 +122,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 								</tbody>
 							</table>
 						</figure>
-					</Fragment>
+					</div>
 				)}
 			</main>
 		);
@@ -187,6 +182,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 				},
 				responsive: true,
 				animation: false,
+				maintainAspectRatio: false,
 				events: []
 			}
 		});

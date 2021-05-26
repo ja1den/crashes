@@ -7,6 +7,7 @@ export interface Column {
 	name: string;
 	display: string;
 	sql: string;
+	color: string;
 }
 
 // Lookup
@@ -15,22 +16,26 @@ const lookup: Lookup = {
 		crashes: {
 			name: 'id',
 			display: 'Crashes',
-			sql: 'COUNT'
+			sql: 'COUNT',
+			color: '338, 78%, 48%'
 		},
 		fatalities: {
 			name: 'fatalities',
 			display: 'Fatalities',
-			sql: 'SUM'
+			sql: 'SUM',
+			color: '287, 65%, 40%'
 		},
 		injuries: {
 			name: 'injuries',
 			display: 'Injuries',
-			sql: 'SUM'
+			sql: 'SUM',
+			color: '208, 79%, 51%'
 		},
 		units: {
 			name: 'units',
 			display: 'Units',
-			sql: 'SUM'
+			sql: 'SUM',
+			color: '123, 41%, 45%'
 		}
 	}
 };
