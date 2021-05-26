@@ -20,13 +20,13 @@ export default async (req: Request, res: Response) => {
 	// Handle Request
 	try {
 		// Parse Columns
-		const columns: [string, Column][] = [];
+		const columns = new Set<string>();
 
 		// Type Check
 		switch (typeof req.query.columns) {
 			case 'string':
 				// Insert
-				columns.push([req.query.columns, null]);
+				columns.add(req.query.columns);
 				break;
 
 			case 'object':
@@ -38,51 +38,43 @@ export default async (req: Request, res: Response) => {
 					if (typeof column !== 'string') return res.status(400).end();
 
 					// Insert
-					columns.push([column, null]);
+					columns.add(column);
 				}
 				break;
 		}
 
-		if (columns.length === 0) return res.status(400).end();
-
-		// Lookup Columns
+		// Columns Exist
 		for (const column of columns) {
-			if (lookup.columns[column[0]] === undefined) {
-				return res.status(400).end();
-			}
-
-			// Insert
-			column[1] = lookup.columns[column[0]];
+			if (lookup.columns[column] === undefined) return res.status(400).end();
 		}
 
 		// Build SQL
-		let sql = 'SELECT YEAR(crashes.date) AS \'group\', ';
+		let sql = 'SELECT YEAR(crashes.date) AS \'group\'';
 
-		for (let i = 0; i < columns.length; i++) {
-			sql += columns[i][1].sql + '(crashes.' + columns[i][1].name + ') AS ' + columns[i][0];
-			sql += i !== columns.length - 1 ? ', ' : '';
+		for (const column of columns) {
+			sql += ', ' + lookup.columns[column].sql + '(crashes.' + lookup.columns[column].name + ') AS ' + column;
 		}
 
 		sql += ' FROM crashes GROUP BY YEAR(crashes.date)';
 
 		// Execute SQL
-		const data = (await mysql.query(sql))[0];
+		const data = (await mysql.query(sql))[0] as Record<string, string | number>[];
 
 		// Parse Data
-		for (const i in data) {
-			const obj: ResponseBody = { group: data[i].group, data: {} };
+		const parsed: ResponseBody[] = [];
 
-			for (const key in data[i]) {
-				if (key !== 'group') {
-					obj.data[key] = parseInt(data[i][key] ?? '0');
-				}
+		for (const record of data) {
+			const data: ResponseBody['data'] = {};
+
+			for (const column of Object.keys(lookup.columns)) {
+				if (record[column] !== undefined) data[column] = parseFloat(record[column].toString());
 			}
 
-			data[i] = obj;
+			parsed.push({ group: record.group.toString(), data });
 		}
 
 		// Send Response
-		res.send(data);
+		res.send(parsed);
 	} catch (err) {
 		// Log
 		console.error(err);

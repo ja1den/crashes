@@ -15,7 +15,7 @@ Chart.register(...registerables);
 declare namespace HomePage {
 	export interface State {
 		columns: string[];
-		data?: Data[];
+		data: Data[];
 	}
 
 	export interface Data {
@@ -40,12 +40,15 @@ class HomePage extends React.Component<object, HomePage.State> {
 		super(props);
 
 		this.state = {
-			columns: Object.keys(lookup.columns)
+			columns: Object.keys(lookup.columns),
+			data: []
 		}
 	}
 
 	componentDidMount() {
-		this.requestData();
+		axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
+			this._mounted && this.setState({ data: res.data });
+		});
 	}
 
 	componentWillUnmount() {
@@ -56,13 +59,14 @@ class HomePage extends React.Component<object, HomePage.State> {
 		// Update Chart
 		if (this._chart !== null && this.state.data !== undefined) {
 			this._chart.data = {
-				labels: Object.values(this.state.data).reduce(
-					(labels: string[], entry) => [...labels, entry.group], []
+				labels: Object.entries(this.state.data).map(
+					([_key, entry]) => entry.group
 				),
-				datasets: this.state.columns.map((column, index) => ({
+				datasets: this.state.columns.map(column => ({
 					label: lookup.columns[column].display,
 					data: this.state.data!.map(
-						entry => entry.data[column as keyof HomePage.Data['data']] ?? null
+						entry =>
+							entry.data[column as keyof HomePage.Data['data']] ?? null
 					),
 					backgroundColor: 'hsl(' + lookup.columns[column].color + ', 0.2)',
 					borderColor: 'hsl(' + lookup.columns[column].color + ', 1.0)',
@@ -75,10 +79,15 @@ class HomePage extends React.Component<object, HomePage.State> {
 
 		// Table Data
 		const table = {
-			headers: ['Group', ...this.state.columns.map(column => lookup.columns[column].display)],
-			data: this.state.data?.map(entry => ([
-				entry.group, ...this.state.columns.map(column => entry.data[column as keyof HomePage.Data['data']])
-			]))
+			headers: [
+				'Group', ...this.state.columns.map(column => lookup.columns[column].display)
+			],
+			data: this.state.data?.map(entry => [
+				entry.group, ...this.state.columns.map(
+					column =>
+						entry.data[column as keyof HomePage.Data['data']]
+				)
+			])
 		}
 
 		// Component HTML
@@ -128,28 +137,20 @@ class HomePage extends React.Component<object, HomePage.State> {
 		);
 	}
 
-	// Request Data
-	requestData() {
-		if (this.state.columns.length !== 0) {
-			axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
-				this._mounted && this.setState({ data: res.data });
-			});
-		}
-	}
-
 	// Handle Change
-	onChange = (name: string, checked: boolean) => {
-		this.setState(state => {
-			const columns = checked
-				? [...state.columns, name]
-				: state.columns.filter(entry => entry !== name)
+	onChange = async (name: string, checked: boolean) => {
+		// Update Selection
+		const columns = Object.keys(lookup.columns).filter(
+			column => checked
+				? this.state.columns.includes(column) || column === name
+				: this.state.columns.includes(column) && column !== name
+		);
 
-			columns.sort((a, b) => {
-				return Object.keys(lookup.columns).indexOf(a) - Object.keys(lookup.columns).indexOf(b);
-			});
+		// Request Data
+		const { data } = await axios.get('/api', { params: { columns } });
 
-			return { columns };
-		}, this.requestData);
+		// Update State
+		if (this._mounted) this.setState({ columns, data });
 	}
 
 	// Handle Reference Update
@@ -170,19 +171,21 @@ class HomePage extends React.Component<object, HomePage.State> {
 				scales: {
 					x: {
 						grid: {
-							color: 'rgba(115, 130, 140, 0.2)'
+							color: 'rgba(115, 130, 140, 0.1)',
+							drawBorder: false
 						}
 					},
 					y: {
 						grid: {
-							color: 'rgba(115, 130, 140, 0.2)'
+							color: 'rgba(115, 130, 140, 0.1)',
+							drawBorder: false
 						},
 						beginAtZero: true
 					}
 				},
 				responsive: true,
-				animation: false,
 				maintainAspectRatio: false,
+				animation: false,
 				events: []
 			}
 		});
