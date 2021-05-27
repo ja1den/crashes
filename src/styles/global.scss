@@ -20,7 +20,7 @@ $enable-semantic-container: true;
 #home {
 	--spacing-block: 1rem;
 	
-	figure {
+	fieldset, figure {
 		margin-bottom: 0;
 	}
 }

@@ -99,12 +99,17 @@ class HomePage extends React.Component<object, HomePage.State> {
 				</hgroup>
 
 				<article>
-					<h6>Select Data</h6>
-
 					<div className='grid'>
-						{Object.entries(lookup.columns).map(([alias, meta]) => (
-							<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
-						))}
+						<fieldset>
+							<legend>Select Data</legend>
+							{Object.entries(lookup.columns).map(([alias, meta]) => (
+								<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
+							))}
+						</fieldset>
+
+						<div>
+							<Form.SelectInput name={['group', 'Data Grouping']} options={[]} onChange={() => { }}></Form.SelectInput>
+						</div>
 					</div>
 				</article>
 
