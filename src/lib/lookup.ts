@@ -13,6 +13,7 @@ export interface Column {
 
 export interface Group {
 	name: string;
+	bool?: boolean;
 	sql?: string;
 	join?: string;
 }
@@ -55,7 +56,8 @@ const lookup: Lookup = {
 			join: 'suburbs'
 		},
 		date: {
-			name: 'date', sql: 'YEAR'
+			name: 'date',
+			sql: 'YEAR(crashes.date)'
 		},
 		speed_limit: {
 			name: 'speed_limit'
@@ -77,23 +79,28 @@ const lookup: Lookup = {
 			join: 'surfaces'
 		},
 		dry: {
-			name: 'dry'
+			name: 'dry',
+			bool: true
 		},
 		raining: {
-			name: 'raining'
+			name: 'raining',
+			bool: true
 		},
 		day: {
-			name: 'day'
+			name: 'day',
+			bool: true
 		},
 		crash_type: {
 			name: 'crash_type_id',
 			join: 'crash_types'
 		},
 		alcohol: {
-			name: 'alcohol'
+			name: 'alcohol',
+			bool: true
 		},
 		drugs: {
-			name: 'drugs'
+			name: 'drugs',
+			bool: true
 		}
 	}
 };

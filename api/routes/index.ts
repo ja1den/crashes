@@ -48,24 +48,22 @@ export default async (req: Request, res: Response) => {
 			if (lookup.columns[column] === undefined) return res.status(400).end();
 		}
 
-		// Group Exists
+		// Lookup Group
 		if (typeof req.query.group !== 'string' || lookup.groups[req.query.group] === undefined) {
 			return res.status(400).end();
 		}
 
-		// Lookup Group
 		let group = lookup.groups[req.query.group];
 
-		// Group SQL
-		let groupSQL = group.join ? group.join + '.name' : 'crashes.' + group.name;
-
-		groupSQL = group.sql ? group.sql + '(' + groupSQL + ')' : groupSQL;
-
 		// Build SQL
-		let sql = 'SELECT ' + groupSQL + ' AS \'group\'';
+		let sql = 'SELECT ';
+
+		sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
+
+		sql += ' \'group\'';
 
 		for (const column of columns) {
-			sql += ', ' + lookup.columns[column].sql + '(crashes.' + lookup.columns[column].name + ') AS ' + column;
+			sql += ', ' + lookup.columns[column].sql + '(crashes.' + lookup.columns[column].name + ') ' + column;
 		}
 
 		sql += ' FROM crashes';
@@ -74,7 +72,23 @@ export default async (req: Request, res: Response) => {
 			sql += ' LEFT JOIN ' + group.join + ' ON crashes.' + group.name + ' = ' + group.join + '.id';
 		}
 
-		sql += ' GROUP BY ' + groupSQL;
+		sql += ' GROUP BY ';
+
+		sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
+
+		if (group.sql === undefined) {
+			sql += ' ORDER BY ISNULL(';
+
+			sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
+
+			sql += '), ';
+
+			sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
+
+			if (group.bool) sql += ' DESC';
+		} else {
+			sql += ' ORDER BY ' + group.sql;
+		}
 
 		// Execute SQL
 		const data = (await mysql.query(sql))[0] as Record<string, string | number>[];
@@ -89,7 +103,14 @@ export default async (req: Request, res: Response) => {
 				if (record[column] !== undefined) data[column] = parseFloat(record[column].toString());
 			}
 
-			parsed.push({ group: record.group.toString(), data });
+			parsed.push({
+				group: record.group !== null
+					? group.bool
+						? record.group ? 'True' : 'False'
+						: record.group.toString()
+					: 'null',
+				data
+			});
 		}
 
 		// Send Response

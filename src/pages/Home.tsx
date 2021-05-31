@@ -1,5 +1,5 @@
 // Import
-import React from 'react';
+import React, { Fragment } from 'react';
 import axios from 'axios';
 
 import { Chart, registerables } from 'chart.js';
@@ -17,7 +17,6 @@ declare namespace HomePage {
 	export interface State {
 		columns: string[];
 		group: string;
-
 		data: Data[];
 	}
 
@@ -50,9 +49,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 	}
 
 	componentDidMount() {
-		axios.get('/api', { params: { columns: this.state.columns, group: this.state.group } }).then(res => {
-			this._mounted && this.setState({ data: res.data });
-		});
+		this.emitRequest();
 	}
 
 	componentWillUnmount() {
@@ -64,7 +61,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 		if (this._chart !== null && this.state.data !== undefined) {
 			this._chart.data = {
 				labels: Object.entries(this.state.data).map(
-					([_key, entry]) => entry.group
+					([_key, entry]) => entry.group !== 'null' ? entry.group : 'Unknown'
 				),
 				datasets: this.state.columns.map(column => ({
 					label: lookup.columns[column].display,
@@ -87,7 +84,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 				'Group', ...this.state.columns.map(column => lookup.columns[column].display)
 			],
 			data: this.state.data?.map(entry => [
-				entry.group, ...this.state.columns.map(
+				entry.group !== 'null' ? entry.group : 'Unknown', ...this.state.columns.map(
 					column =>
 						entry.data[column as keyof HomePage.Data['data']]
 				)
@@ -120,60 +117,61 @@ class HomePage extends React.Component<object, HomePage.State> {
 				</article>
 
 				{this.state.data !== undefined && (
-					<div className='grid'>
-						<div className='chart'>
+					<Fragment>
+						<section className='chart'>
 							<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
-						</div>
+						</section>
 
-						<figure>
-							<table role='grid'>
-								<thead>
-									<tr>{table.headers.map(name => (<th scope='col' key={name}>{name}</th>))}</tr>
-								</thead>
+						<section>
+							<figure>
+								<table role='grid'>
+									<thead>
+										<tr>{table.headers.map(name => (<th scope='col' key={name}>{name}</th>))}</tr>
+									</thead>
 
-								<tbody>
-									{table.data?.map(entry => (
-										<tr key={entry[0]}>
-											{entry.map((point, index) => (
-												<td key={index}>{point}</td>
-											))}
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</figure>
-					</div>
+									<tbody>
+										{table.data?.map(entry => (
+											<tr key={entry[0]}>
+												{entry.map((point, index) => (
+													<td key={index}>{point}</td>
+												))}
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</figure>
+						</section>
+					</Fragment>
 				)}
 			</main>
 		);
 	}
+
+	// Emit Request
+	emitRequest = () => {
+		axios.get('/api', { params: { columns: this.state.columns, group: this.state.group } }).then(({ data }) => {
+			if (this._mounted) this.setState({ data });
+		});
+	};
 
 	// Handle Change
 	onChange = (name: string, value: number | boolean) => {
 		// Switch on Type
 		switch (typeof value) {
 			case 'number':
-				// Read Group
-				const group = Object.keys(lookup.groups)[value];
-
-				// Request Data
-				axios.get('/api', { params: { columns: this.state.columns, group } }).then(({ data }) => {
-					if (this._mounted) this.setState({ group, data });
-				});
+				this.setState({
+					group: Object.keys(lookup.groups)[value]
+				}, this.emitRequest);
 				break;
 
 			case 'boolean':
-				// Update Selection
-				const columns = Object.keys(lookup.columns).filter(
-					column => value
-						? this.state.columns.includes(column) || column === name
-						: this.state.columns.includes(column) && column !== name
-				);
-
-				// Request Data
-				axios.get('/api', { params: { columns, group: this.state.group } }).then(({ data }) => {
-					if (this._mounted) this.setState({ columns, data });
-				});
+				this.setState(state => ({
+					columns: Object.keys(lookup.columns).filter(
+						column => value
+							? state.columns.includes(column) || column === name
+							: state.columns.includes(column) && column !== name
+					)
+				}), this.emitRequest);
 				break;
 		}
 	}
@@ -210,9 +208,12 @@ class HomePage extends React.Component<object, HomePage.State> {
 				},
 				responsive: true,
 				maintainAspectRatio: true,
-				aspectRatio: 3 / 2,
-				animation: false,
-				events: []
+				aspectRatio: 2,
+				onResize: (_, size) => {
+					if (this._chart) this._chart.options.aspectRatio = size.width >= 768 ? 11 / 4 : 2;
+				},
+				events: [],
+				animation: false
 			}
 		});
 

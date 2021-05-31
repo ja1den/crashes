@@ -20,8 +20,12 @@ $enable-semantic-container: true;
 #home {
 	--spacing-block: 1rem;
 	
-	fieldset, figure, table {
+	fieldset {
 		margin-bottom: 0;
+	}
+
+	section {
+		--spacing-block: 0.5rem;
 	}
 }
 
