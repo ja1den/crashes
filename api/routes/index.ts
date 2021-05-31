@@ -48,14 +48,33 @@ export default async (req: Request, res: Response) => {
 			if (lookup.columns[column] === undefined) return res.status(400).end();
 		}
 
+		// Group Exists
+		if (typeof req.query.group !== 'string' || lookup.groups[req.query.group] === undefined) {
+			return res.status(400).end();
+		}
+
+		// Lookup Group
+		let group = lookup.groups[req.query.group];
+
+		// Group SQL
+		let groupSQL = group.join ? group.join + '.name' : 'crashes.' + group.name;
+
+		groupSQL = group.sql ? group.sql + '(' + groupSQL + ')' : groupSQL;
+
 		// Build SQL
-		let sql = 'SELECT YEAR(crashes.date) AS \'group\'';
+		let sql = 'SELECT ' + groupSQL + ' AS \'group\'';
 
 		for (const column of columns) {
 			sql += ', ' + lookup.columns[column].sql + '(crashes.' + lookup.columns[column].name + ') AS ' + column;
 		}
 
-		sql += ' FROM crashes GROUP BY YEAR(crashes.date)';
+		sql += ' FROM crashes';
+
+		if (group.join !== undefined) {
+			sql += ' LEFT JOIN ' + group.join + ' ON crashes.' + group.name + ' = ' + group.join + '.id';
+		}
+
+		sql += ' GROUP BY ' + groupSQL;
 
 		// Execute SQL
 		const data = (await mysql.query(sql))[0] as Record<string, string | number>[];

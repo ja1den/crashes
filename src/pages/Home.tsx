@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import { Chart, registerables } from 'chart.js';
 
+import toTitle from 'lib/toTitle';
 import lookup from 'lib/lookup';
 
 import Form from 'components/Form';
@@ -15,6 +16,8 @@ Chart.register(...registerables);
 declare namespace HomePage {
 	export interface State {
 		columns: string[];
+		group: string;
+
 		data: Data[];
 	}
 
@@ -41,12 +44,13 @@ class HomePage extends React.Component<object, HomePage.State> {
 
 		this.state = {
 			columns: Object.keys(lookup.columns),
+			group: Object.keys(lookup.groups)[0],
 			data: []
 		}
 	}
 
 	componentDidMount() {
-		axios.get('/api', { params: { columns: this.state.columns } }).then(res => {
+		axios.get('/api', { params: { columns: this.state.columns, group: this.state.group } }).then(res => {
 			this._mounted && this.setState({ data: res.data });
 		});
 	}
@@ -108,7 +112,9 @@ class HomePage extends React.Component<object, HomePage.State> {
 						</fieldset>
 
 						<div>
-							<Form.SelectInput name={['group', 'Data Grouping']} options={[]} onChange={() => { }}></Form.SelectInput>
+							<Form.SelectInput name={['group', 'Data Grouping']} options={Object.keys(lookup.groups).map((alias, index) =>
+								[index, toTitle(alias)]
+							)} onChange={this.onChange}></Form.SelectInput>
 						</div>
 					</div>
 				</article>
@@ -143,19 +149,33 @@ class HomePage extends React.Component<object, HomePage.State> {
 	}
 
 	// Handle Change
-	onChange = async (name: string, checked: boolean) => {
-		// Update Selection
-		const columns = Object.keys(lookup.columns).filter(
-			column => checked
-				? this.state.columns.includes(column) || column === name
-				: this.state.columns.includes(column) && column !== name
-		);
+	onChange = (name: string, value: number | boolean) => {
+		// Switch on Type
+		switch (typeof value) {
+			case 'number':
+				// Read Group
+				const group = Object.keys(lookup.groups)[value];
 
-		// Request Data
-		const { data } = await axios.get('/api', { params: { columns } });
+				// Request Data
+				axios.get('/api', { params: { columns: this.state.columns, group } }).then(({ data }) => {
+					if (this._mounted) this.setState({ group, data });
+				});
+				break;
 
-		// Update State
-		if (this._mounted) this.setState({ columns, data });
+			case 'boolean':
+				// Update Selection
+				const columns = Object.keys(lookup.columns).filter(
+					column => value
+						? this.state.columns.includes(column) || column === name
+						: this.state.columns.includes(column) && column !== name
+				);
+
+				// Request Data
+				axios.get('/api', { params: { columns, group: this.state.group } }).then(({ data }) => {
+					if (this._mounted) this.setState({ columns, data });
+				});
+				break;
+		}
 	}
 
 	// Handle Reference Update
@@ -189,7 +209,8 @@ class HomePage extends React.Component<object, HomePage.State> {
 					}
 				},
 				responsive: true,
-				maintainAspectRatio: false,
+				maintainAspectRatio: true,
+				aspectRatio: 3 / 2,
 				animation: false,
 				events: []
 			}
