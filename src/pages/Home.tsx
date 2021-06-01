@@ -17,7 +17,8 @@ declare namespace HomePage {
 	export interface State {
 		columns: string[];
 		group: string;
-		data: Data[];
+		unknown: boolean;
+		data?: Data[];
 	}
 
 	export interface Data {
@@ -44,7 +45,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 		this.state = {
 			columns: Object.keys(lookup.columns),
 			group: Object.keys(lookup.groups)[0],
-			data: []
+			unknown: false
 		}
 	}
 
@@ -61,8 +62,11 @@ class HomePage extends React.Component<object, HomePage.State> {
 		if (this._chart !== null && this.state.data !== undefined) {
 			this._chart.data = {
 				labels: Object.entries(this.state.data).map(
-					([_key, entry]) => entry.group !== 'null' ? entry.group : 'Unknown'
-				),
+					([_key, entry]) =>
+						entry.group === 'null'
+							? this.state.unknown && 'Unknown'
+							: entry.group
+				).filter(Boolean),
 				datasets: this.state.columns.map(column => ({
 					label: lookup.columns[column].display,
 					data: this.state.data!.map(
@@ -84,11 +88,14 @@ class HomePage extends React.Component<object, HomePage.State> {
 				'Group', ...this.state.columns.map(column => lookup.columns[column].display)
 			],
 			data: this.state.data?.map(entry => [
-				entry.group !== 'null' ? entry.group : 'Unknown', ...this.state.columns.map(
+				entry.group === 'null'
+					? this.state.unknown && 'Unknown'
+					: entry.group,
+				...this.state.columns.map(
 					column =>
 						entry.data[column as keyof HomePage.Data['data']]
 				)
-			])
+			]).filter(entry => Boolean(entry[0])) as (string | number)[][]
 		}
 
 		// Component HTML
@@ -103,15 +110,18 @@ class HomePage extends React.Component<object, HomePage.State> {
 					<div className='grid'>
 						<fieldset>
 							<legend>Select Data</legend>
+
 							{Object.entries(lookup.columns).map(([alias, meta]) => (
 								<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
 							))}
 						</fieldset>
 
 						<div>
-							<Form.SelectInput name={['group', 'Data Grouping']} options={Object.keys(lookup.groups).map((alias, index) =>
+							<Form.SelectInput name={['group', 'Group Data']} options={Object.keys(lookup.groups).map((alias, index) =>
 								[index, toTitle(alias)]
-							)} onChange={this.onChange}></Form.SelectInput>
+							)} onChange={this.onChange} />
+
+							<Form.BooleanInput name={['unknown', 'Hide Unknown']} onChange={this.onChange} checked />
 						</div>
 					</div>
 				</article>
@@ -165,13 +175,17 @@ class HomePage extends React.Component<object, HomePage.State> {
 				break;
 
 			case 'boolean':
-				this.setState(state => ({
-					columns: Object.keys(lookup.columns).filter(
-						column => value
-							? state.columns.includes(column) || column === name
-							: state.columns.includes(column) && column !== name
-					)
-				}), this.emitRequest);
+				if (name === 'unknown') {
+					this.setState({ unknown: !value });
+				} else {
+					this.setState(state => ({
+						columns: Object.keys(lookup.columns).filter(
+							column => value
+								? state.columns.includes(column) || column === name
+								: state.columns.includes(column) && column !== name
+						)
+					}), this.emitRequest);
+				}
 				break;
 		}
 	}
