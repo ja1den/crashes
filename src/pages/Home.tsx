@@ -123,6 +123,14 @@ class HomePage extends React.Component<object, HomePage.State> {
 
 							<Form.BooleanInput name={['unknown', 'Hide Unknown']} onChange={this.onChange} checked />
 						</div>
+
+						<div>
+							<Form.SelectInput name={['fltrGroup', 'Filter Data']} options={Object.keys(lookup.groups).map((alias, index) =>
+								alias !== this.state.group ? [index, toTitle(alias)] : null
+							).filter(Boolean) as [number, string][]} onChange={this.onChange} />
+
+							<Form.SelectInput name={['fltrField', 'Target Field']} options={[]} onChange={this.onChange} />
+						</div>
 					</div>
 				</article>
 
