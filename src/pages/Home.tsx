@@ -16,8 +16,12 @@ Chart.register(...registerables);
 declare namespace HomePage {
 	export interface State {
 		columns: string[];
+
 		group: string;
 		unknown: boolean;
+
+		filter: [string, string | number | null];
+
 		data?: Data[];
 	}
 
@@ -45,7 +49,8 @@ class HomePage extends React.Component<object, HomePage.State> {
 		this.state = {
 			columns: Object.keys(lookup.columns),
 			group: Object.keys(lookup.groups)[0],
-			unknown: false
+			unknown: false,
+			filter: [Object.keys(lookup.groups)[1], null]
 		}
 	}
 
@@ -125,11 +130,11 @@ class HomePage extends React.Component<object, HomePage.State> {
 						</div>
 
 						<div>
-							<Form.SelectInput name={['fltrGroup', 'Filter Data']} options={Object.keys(lookup.groups).map((alias, index) =>
+							<Form.SelectInput name={['filterGroup', 'Filter Data']} options={Object.keys(lookup.groups).map((alias, index) =>
 								alias !== this.state.group ? [index, toTitle(alias)] : null
 							).filter(Boolean) as [number, string][]} onChange={this.onChange} />
 
-							<Form.SelectInput name={['fltrField', 'Target Field']} options={[]} onChange={this.onChange} />
+							<Form.SelectInput name={['filterField', 'Target Field']} options={[]} onChange={this.onChange} />
 						</div>
 					</div>
 				</article>
@@ -177,9 +182,19 @@ class HomePage extends React.Component<object, HomePage.State> {
 		// Switch on Type
 		switch (typeof value) {
 			case 'number':
-				this.setState({
-					group: Object.keys(lookup.groups)[value]
-				}, this.emitRequest);
+				switch (name) {
+					case 'filterGroup':
+						break;
+
+					case 'filterField':
+						break;
+
+					default:
+						this.setState({
+							group: Object.keys(lookup.groups)[value]
+						}, this.emitRequest);
+						break;
+				}
 				break;
 
 			case 'boolean':
