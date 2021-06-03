@@ -136,7 +136,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 								alias !== this.state.group ? [alias, toTitle(alias)] : null
 							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter[0]} />
 
-							<Form.SelectInput<number> name={['filterField', 'Target Field']} options={[[-1, 'None'], ...this.state.options.map(
+							<Form.SelectInput<number> name={['filterField', 'Require Field']} options={[[-1, 'None'], ...this.state.options.map(
 								(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
 							) as [number, string][]]} onChange={this.onChange} />
 						</div>
