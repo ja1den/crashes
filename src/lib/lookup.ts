@@ -13,9 +13,13 @@ export interface Column {
 
 export interface Group {
 	name: string;
-	bool?: boolean;
+
+	isBoolean?: boolean;
+
 	sql?: string;
 	join?: string;
+
+	onlyFilter?: boolean;
 }
 
 // Lookup
@@ -53,7 +57,8 @@ const lookup: Lookup = {
 		},
 		suburb: {
 			name: 'suburb_id',
-			join: 'suburbs'
+			join: 'suburbs',
+			onlyFilter: true
 		},
 		date: {
 			name: 'date',
@@ -80,15 +85,15 @@ const lookup: Lookup = {
 		},
 		dry: {
 			name: 'dry',
-			bool: true
+			isBoolean: true
 		},
 		raining: {
 			name: 'raining',
-			bool: true
+			isBoolean: true
 		},
 		day: {
 			name: 'day',
-			bool: true
+			isBoolean: true
 		},
 		crash_type: {
 			name: 'crash_type_id',
@@ -96,11 +101,11 @@ const lookup: Lookup = {
 		},
 		alcohol: {
 			name: 'alcohol',
-			bool: true
+			isBoolean: true
 		},
 		drugs: {
 			name: 'drugs',
-			bool: true
+			isBoolean: true
 		}
 	}
 };

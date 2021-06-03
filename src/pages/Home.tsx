@@ -18,7 +18,7 @@ declare namespace HomePage {
 		columns: string[];
 
 		group: string;
-		unknown: boolean;
+		hideNull: boolean;
 
 		filter: [string, string | number | null];
 
@@ -49,7 +49,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 		this.state = {
 			columns: Object.keys(lookup.columns),
 			group: Object.keys(lookup.groups)[0],
-			unknown: false,
+			hideNull: true,
 			filter: [Object.keys(lookup.groups)[1], null]
 		}
 	}
@@ -69,7 +69,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 				labels: Object.entries(this.state.data).map(
 					([_key, entry]) =>
 						entry.group === 'null'
-							? this.state.unknown && 'Unknown'
+							? this.state.hideNull && 'Unknown'
 							: entry.group
 				).filter(Boolean),
 				datasets: this.state.columns.map(column => ({
@@ -94,7 +94,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 			],
 			data: this.state.data?.map(entry => [
 				entry.group === 'null'
-					? this.state.unknown && 'Unknown'
+					? this.state.hideNull && 'Unknown'
 					: entry.group,
 				...this.state.columns.map(
 					column =>
@@ -122,19 +122,19 @@ class HomePage extends React.Component<object, HomePage.State> {
 						</fieldset>
 
 						<div>
-							<Form.SelectInput name={['group', 'Group Data']} options={Object.keys(lookup.groups).map((alias, index) =>
-								[index, toTitle(alias)]
-							)} onChange={this.onChange} />
+							<Form.SelectInput<string> name={['group', 'Group Data']} options={Object.keys(lookup.groups).map(alias =>
+								lookup.groups[alias].onlyFilter !== true ? [alias, toTitle(alias)] : null
+							).filter(Boolean) as [string, string][]} onChange={this.onChange} />
 
-							<Form.BooleanInput name={['unknown', 'Hide Unknown']} onChange={this.onChange} checked />
+							<Form.BooleanInput name={['hide_null', 'Hide Unknown']} onChange={this.onChange} checked />
 						</div>
 
 						<div>
-							<Form.SelectInput name={['filterGroup', 'Filter Data']} options={Object.keys(lookup.groups).map((alias, index) =>
-								alias !== this.state.group ? [index, toTitle(alias)] : null
-							).filter(Boolean) as [number, string][]} onChange={this.onChange} />
+							<Form.SelectInput<string> name={['filterGroup', 'Filter Data']} options={Object.keys(lookup.groups).map(alias =>
+								alias !== this.state.group ? [alias, toTitle(alias)] : null
+							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter[0]} />
 
-							<Form.SelectInput name={['filterField', 'Target Field']} options={[]} onChange={this.onChange} />
+							<Form.SelectInput<string> name={['filterField', 'Target Field']} options={[['', 'None']]} onChange={this.onChange} />
 						</div>
 					</div>
 				</article>
@@ -178,32 +178,42 @@ class HomePage extends React.Component<object, HomePage.State> {
 	};
 
 	// Handle Change
-	onChange = (name: string, value: number | boolean) => {
+	onChange = (name: string, data: string | boolean) => {
 		// Switch on Type
-		switch (typeof value) {
-			case 'number':
+		switch (typeof data) {
+			case 'string':
 				switch (name) {
 					case 'filterGroup':
+						this.setState({
+							filter: [data, null]
+						});
 						break;
 
 					case 'filterField':
 						break;
 
 					default:
-						this.setState({
-							group: Object.keys(lookup.groups)[value]
-						}, this.emitRequest);
+						this.setState(state => ({
+							group: data,
+							filter: data !== state.filter[0]
+								? state.filter
+								: [
+									Object.keys(lookup.groups).find(
+										key => key !== data
+									)!, null
+								]
+						}), this.emitRequest);
 						break;
 				}
 				break;
 
 			case 'boolean':
-				if (name === 'unknown') {
-					this.setState({ unknown: !value });
+				if (name === 'hide_null') {
+					this.setState({ hideNull: data });
 				} else {
 					this.setState(state => ({
 						columns: Object.keys(lookup.columns).filter(
-							column => value
+							column => data
 								? state.columns.includes(column) || column === name
 								: state.columns.includes(column) && column !== name
 						)

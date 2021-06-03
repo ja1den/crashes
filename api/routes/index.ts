@@ -85,7 +85,7 @@ export default async (req: Request, res: Response) => {
 
 			sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
 
-			if (group.bool) sql += ' DESC';
+			if (group.isBoolean) sql += ' DESC';
 		} else {
 			sql += ' ORDER BY ' + group.sql;
 		}
@@ -105,7 +105,7 @@ export default async (req: Request, res: Response) => {
 
 			parsed.push({
 				group: record.group !== null
-					? group.bool
+					? group.isBoolean
 						? record.group ? 'True' : 'False'
 						: record.group.toString()
 					: 'null',

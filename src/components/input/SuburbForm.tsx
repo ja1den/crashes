@@ -51,11 +51,11 @@ class SuburbForm extends React.Component<object, SuburbForm.State> {
 	}
 
 	// Handle Change
-	onChange = (name: string, value: string | number) => {
+	onChange = (name: string, data: string | number) => {
 		this.setState(state => ({
 			data: {
 				...state.data,
-				[name]: value
+				[name]: data
 			}
 		}));
 	}

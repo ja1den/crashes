@@ -176,11 +176,11 @@ class CrashForm extends React.Component<object, CrashForm.State> {
 	}
 
 	// Handle Change
-	onChange = (name: string, value: string | number | boolean) => {
+	onChange = (name: string, data: string | number | boolean) => {
 		this.setState(state => ({
 			data: {
 				...state.data,
-				[name]: value
+				[name]: data
 			}
 		}));
 	}

@@ -11,7 +11,7 @@ declare namespace Form {
 
 	export interface InputProps<T> {
 		name: [string, string];
-		onChange: (name: string, value: T) => void;
+		onChange: (name: string, data: T) => void;
 	}
 
 	namespace BooleanInput {
@@ -21,8 +21,9 @@ declare namespace Form {
 	}
 
 	namespace SelectInput {
-		export interface Props extends InputProps<number> {
-			options: [number, string][];
+		export interface Props<T extends string | number> extends InputProps<T> {
+			options: [T, string][];
+			selection?: T;
 		}
 	}
 }
@@ -144,8 +145,8 @@ class Form extends React.Component<Form.Props> {
 	}
 
 	// Select Input
-	static SelectInput = class SelectInput extends React.Component<Form.SelectInput.Props, Form.State<number>> {
-		constructor(props: Form.SelectInput.Props) {
+	static SelectInput = class SelectInput<T extends string | number> extends React.Component<Form.SelectInput.Props<T>, Form.State<T>> {
+		constructor(props: Form.SelectInput.Props<T>) {
 			super(props);
 
 			this.state = {
@@ -166,7 +167,7 @@ class Form extends React.Component<Form.Props> {
 		render = () => (
 			<label htmlFor={this.props.name[0]}>
 				{this.props.name[1]}
-				<select id={this.props.name[0]} onChange={this.onChange}>
+				<select id={this.props.name[0]} value={this.props.selection} onChange={this.onChange}>
 					{this.props.options.map(option => (
 						<option key={option[0]} value={option[0]}>{option[1]}</option>
 					))}
@@ -176,10 +177,14 @@ class Form extends React.Component<Form.Props> {
 
 		// Handle Change
 		onChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-			const data = parseInt(e.target.value);
+			let data: string | number = e.target.value;
 
-			this.props.onChange(this.props.name[0], data);
-			this.setState({ data });
+			if (!isNaN(parseInt(e.target.value))) {
+				data = parseInt(e.target.value);
+			}
+
+			this.props.onChange(this.props.name[0], data as T);
+			this.setState({ data: data as T });
 		}
 	}
 

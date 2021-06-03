@@ -12,8 +12,8 @@ const SlopeForm: React.FC = () => {
 	const [data, setData] = useState<Omit<Slope, 'id'>>({ name: '' });
 
 	// Handle Change
-	const onChange = (_name: string, value: string) => {
-		setData({ name: value });
+	const onChange = (_name: string, data: string) => {
+		setData({ name: data });
 	}
 
 	// Handle Submit

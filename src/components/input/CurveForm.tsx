@@ -12,8 +12,8 @@ const CurveForm: React.FC = () => {
 	const [data, setData] = useState<Omit<Curve, 'id'>>({ name: '' });
 
 	// Handle Change
-	const onChange = (_name: string, value: string) => {
-		setData({ name: value });
+	const onChange = (_name: string, data: string) => {
+		setData({ name: data });
 	}
 
 	// Handle Submit
