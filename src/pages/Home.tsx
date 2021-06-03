@@ -71,7 +71,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 				labels: Object.entries(this.state.data).map(
 					([_key, entry]) =>
 						entry.group === 'null'
-							? this.state.hideNull && 'Unknown'
+							? !this.state.hideNull && 'Unknown'
 							: entry.group
 				).filter(Boolean),
 				datasets: this.state.columns.map(column => ({
@@ -96,7 +96,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 			],
 			data: this.state.data?.map(entry => [
 				entry.group === 'null'
-					? this.state.hideNull && 'Unknown'
+					? !this.state.hideNull && 'Unknown'
 					: entry.group,
 				...this.state.columns.map(
 					column =>
