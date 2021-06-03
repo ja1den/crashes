@@ -20,7 +20,8 @@ declare namespace HomePage {
 		group: string;
 		hideNull: boolean;
 
-		filter: [string, string | number | null];
+		filter: [string, string | null];
+		options: string[];
 
 		data?: Data[];
 	}
@@ -50,7 +51,8 @@ class HomePage extends React.Component<object, HomePage.State> {
 			columns: Object.keys(lookup.columns),
 			group: Object.keys(lookup.groups)[0],
 			hideNull: true,
-			filter: [Object.keys(lookup.groups)[1], null]
+			filter: [Object.keys(lookup.groups)[1], null],
+			options: []
 		}
 	}
 
@@ -134,7 +136,9 @@ class HomePage extends React.Component<object, HomePage.State> {
 								alias !== this.state.group ? [alias, toTitle(alias)] : null
 							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter[0]} />
 
-							<Form.SelectInput<string> name={['filterField', 'Target Field']} options={[['', 'None']]} onChange={this.onChange} />
+							<Form.SelectInput<number> name={['filterField', 'Target Field']} options={[[-1, 'None'], ...this.state.options.map(
+								(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
+							) as [number, string][]]} onChange={this.onChange} />
 						</div>
 					</div>
 				</article>
@@ -175,10 +179,14 @@ class HomePage extends React.Component<object, HomePage.State> {
 		axios.get('/api', { params: { columns: this.state.columns, group: this.state.group } }).then(({ data }) => {
 			if (this._mounted) this.setState({ data });
 		});
-	};
+
+		axios.get('/api', { params: { group: this.state.filter[0] } }).then(({ data }: { data: { group: string }[] }) => {
+			if (this._mounted) this.setState({ options: data.map(entry => entry.group) });
+		});
+	}
 
 	// Handle Change
-	onChange = (name: string, data: string | boolean) => {
+	onChange = (name: string, data: string | number | boolean) => {
 		// Switch on Type
 		switch (typeof data) {
 			case 'string':
@@ -186,10 +194,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 					case 'filterGroup':
 						this.setState({
 							filter: [data, null]
-						});
-						break;
-
-					case 'filterField':
+						}, this.emitRequest);
 						break;
 
 					default:
@@ -205,6 +210,12 @@ class HomePage extends React.Component<object, HomePage.State> {
 						}), this.emitRequest);
 						break;
 				}
+				break;
+
+			case 'number':
+				this.setState(state => ({
+					filter: [state.filter[0], this.state.options[data]]
+				}));
 				break;
 
 			case 'boolean':

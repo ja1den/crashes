@@ -27,6 +27,10 @@ $enable-semantic-container: true;
 	section {
 		--spacing-block: 0.5rem;
 	}
+
+	label:nth-child(2) select {
+		margin-bottom: 0;
+	}
 }
 
 /* Table Page */

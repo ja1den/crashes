@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import mysql from '../lib/mysql';
 
 // Lookup
-import lookup, { Column } from '../../src/lib/lookup';
+import lookup from '../../src/lib/lookup';
 
 // Types
 interface ResponseBody {
