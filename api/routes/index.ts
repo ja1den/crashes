@@ -55,7 +55,37 @@ export default async (req: Request, res: Response) => {
 
 		let group = lookup.groups[req.query.group];
 
-		// Build SQL
+		// Filters
+		if (typeof req.query.filter === 'string') {
+			try {
+				req.query.filter = JSON.parse(req.query.filter);
+			} catch (e) {
+				return res.status(400).end();
+			}
+		}
+
+		let filter: { group: string, field: string } | null = null;
+
+		if (req.query.filter !== undefined) {
+			if (typeof req.query.filter === 'object' && !Array.isArray(req.query.filter)) {
+				if (typeof req.query.filter.group === 'string' && typeof req.query.filter.field === 'string') {
+					if (lookup.groups[req.query.filter.group] !== undefined) {
+						filter = {
+							group: req.query.filter.group,
+							field: req.query.filter.field
+						};
+					} else {
+						return res.status(400).end();
+					}
+				} else {
+					return res.status(400).end();
+				}
+			} else {
+				return res.status(400).end();
+			}
+		}
+
+		// Select Columns
 		let sql = 'SELECT ';
 
 		sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
@@ -66,16 +96,36 @@ export default async (req: Request, res: Response) => {
 			sql += ', ' + lookup.columns[column].sql + '(crashes.' + lookup.columns[column].name + ') ' + column;
 		}
 
+		// Join Tables
 		sql += ' FROM crashes';
 
 		if (group.join !== undefined) {
 			sql += ' LEFT JOIN ' + group.join + ' ON crashes.' + group.name + ' = ' + group.join + '.id';
 		}
 
+		if (filter !== null && lookup.groups[filter.group].join !== undefined) {
+			sql += ' LEFT JOIN ' + lookup.groups[filter.group].join + ' ON crashes.' + lookup.groups[filter.group].name + ' = ' + lookup.groups[filter.group].join + '.id';
+		}
+
+		// Filter Data
+		if (filter !== null) {
+			sql += ' WHERE ';
+
+			sql += lookup.groups[filter.group].join
+				? lookup.groups[filter.group].join + '.name'
+				: 'crashes.' + filter.group;
+
+			sql += filter.field !== 'null'
+				? ' = \'' + filter.field + '\''
+				: ' IS NULL';
+		}
+
+		// Group Data
 		sql += ' GROUP BY ';
 
 		sql += group.sql ?? (group.join ? group.join + '.name' : 'crashes.' + group.name);
 
+		// Sort Data
 		if (group.sql === undefined) {
 			sql += ' ORDER BY ISNULL(';
 
