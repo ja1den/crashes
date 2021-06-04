@@ -20,7 +20,10 @@ declare namespace HomePage {
 		group: string;
 		hideNull: boolean;
 
-		filter: [string, string | null];
+		filter: {
+			group: string;
+			field: string | null;
+		};
 		options: string[];
 
 		data?: Data[];
@@ -51,13 +54,16 @@ class HomePage extends React.Component<object, HomePage.State> {
 			columns: Object.keys(lookup.columns),
 			group: Object.keys(lookup.groups)[0],
 			hideNull: true,
-			filter: [Object.keys(lookup.groups)[1], null],
+			filter: {
+				group: Object.keys(lookup.groups)[1],
+				field: null
+			},
 			options: []
 		}
 	}
 
 	componentDidMount() {
-		this.emitRequest();
+		this.requestData();
 	}
 
 	componentWillUnmount() {
@@ -134,7 +140,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 						<div>
 							<Form.SelectInput<string> name={['filterGroup', 'Filter Data']} options={Object.keys(lookup.groups).map(alias =>
 								alias !== this.state.group ? [alias, toTitle(alias)] : null
-							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter[0]} />
+							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter.group} />
 
 							<Form.SelectInput<number> name={['filterField', 'Require Field']} options={[[-1, 'None'], ...this.state.options.map(
 								(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
@@ -174,13 +180,21 @@ class HomePage extends React.Component<object, HomePage.State> {
 		);
 	}
 
-	// Emit Request
-	emitRequest = () => {
-		axios.get('/api', { params: { columns: this.state.columns, group: this.state.group } }).then(({ data }) => {
+	// Request Data
+	requestData = () => {
+		axios.get('/api', {
+			params: {
+				columns: this.state.columns,
+				group: this.state.group,
+				filter: this.state.filter.field !== null
+					? this.state.filter
+					: undefined
+			}
+		}).then(({ data }) => {
 			if (this._mounted) this.setState({ data });
 		});
 
-		axios.get('/api', { params: { group: this.state.filter[0] } }).then(({ data }: { data: { group: string }[] }) => {
+		axios.get('/api', { params: { group: this.state.filter.group } }).then(({ data }: { data: { group: string }[] }) => {
 			if (this._mounted) this.setState({ options: data.map(entry => entry.group) });
 		});
 	}
@@ -193,29 +207,38 @@ class HomePage extends React.Component<object, HomePage.State> {
 				switch (name) {
 					case 'filterGroup':
 						this.setState({
-							filter: [data, null]
-						}, this.emitRequest);
+							filter: {
+								group: data,
+								field: null
+							},
+						}, this.requestData);
 						break;
 
 					default:
 						this.setState(state => ({
 							group: data,
-							filter: data !== state.filter[0]
+							filter: data !== state.filter.group
 								? state.filter
-								: [
-									Object.keys(lookup.groups).find(
+								: {
+									group: Object.keys(lookup.groups).find(
 										key => key !== data
-									)!, null
-								]
-						}), this.emitRequest);
+									)!,
+									field: null
+								}
+						}), this.requestData);
 						break;
 				}
 				break;
 
 			case 'number':
 				this.setState(state => ({
-					filter: [state.filter[0], this.state.options[data]]
-				}));
+					filter: {
+						group: state.filter.group,
+						field: data !== -1
+							? this.state.options[data]
+							: null
+					}
+				}), this.requestData);
 				break;
 
 			case 'boolean':
@@ -228,7 +251,7 @@ class HomePage extends React.Component<object, HomePage.State> {
 								? state.columns.includes(column) || column === name
 								: state.columns.includes(column) && column !== name
 						)
-					}), this.emitRequest);
+					}), this.requestData);
 				}
 				break;
 		}
