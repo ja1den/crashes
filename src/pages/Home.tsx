@@ -4,29 +4,33 @@ import axios from 'axios';
 
 import { Chart, registerables } from 'chart.js';
 
+import { RouteComponentProps, withRouter } from 'react-router';
+import qs from 'qs';
+
 import toTitle from 'lib/toTitle';
 import lookup from 'lib/lookup';
-
-import Form from 'components/Form';
 
 // Register Chart.js
 Chart.register(...registerables);
 
 // Types
 declare namespace HomePage {
+	export interface Props extends RouteComponentProps { }
+
 	export interface State {
+		options: string[];
+		data: Data[];
+
+		isLegal: boolean;
+	}
+
+	export interface Parameters {
 		columns: string[];
 
 		group: string;
-		hideNull: boolean;
+		hideNull: '0' | '1';
 
-		filter: {
-			group: string;
-			field: string | null;
-		};
-		options: string[];
-
-		data?: Data[];
+		filter: { group: string; field: string };
 	}
 
 	export interface Data {
@@ -41,74 +45,179 @@ declare namespace HomePage {
 }
 
 // Home Component
-class HomePage extends React.Component<object, HomePage.State> {
+class HomePage extends React.Component<HomePage.Props, HomePage.State> {
 	_mounted = true;
 
 	_canvas: HTMLCanvasElement | null = null;
 	_chart: Chart | null = null;
 
-	constructor(props: object) {
+	constructor(props: RouteComponentProps) {
 		super(props);
 
+		// Initialise State
 		this.state = {
-			columns: Object.keys(lookup.columns),
-			group: Object.keys(lookup.groups)[0],
-			hideNull: true,
-			filter: {
-				group: Object.keys(lookup.groups)[1],
-				field: null
-			},
-			options: []
-		}
+			options: [],
+			data: [],
+			isLegal: false
+		};
 	}
 
-	componentDidMount() {
-		this.requestData();
+	// Handle Mount
+	componentDidMount = () => this.checkParams();
+
+	// Handle Update
+	componentDidUpdate(prevProps: HomePage.Props) {
+		if (prevProps.location.search !== this.props.location.search) this.checkParams();
 	}
 
-	componentWillUnmount() {
-		this._mounted = false;
-	}
+	// Handle Unmount
+	componentWillUnmount = () => this._mounted = false;
 
 	render() {
-		// Update Chart
-		if (this._chart !== null && this.state.data !== undefined) {
-			this._chart.data = {
-				labels: Object.entries(this.state.data).map(
-					([_key, entry]) =>
-						entry.group === 'null'
-							? !this.state.hideNull && 'Unknown'
-							: entry.group
-				).filter(Boolean),
-				datasets: this.state.columns.map(column => ({
-					label: lookup.columns[column].display,
-					data: this.state.data!.map(
-						entry =>
-							entry.data[column as keyof HomePage.Data['data']] ?? null
-					),
-					backgroundColor: 'hsl(' + lookup.columns[column].color + ', 0.2)',
-					borderColor: 'hsl(' + lookup.columns[column].color + ', 1.0)',
-					borderWidth: 1
-				}))
-			};
+		// Page Content
+		let content = <p>Loading...</p>;
 
-			this._chart.update();
-		}
+		if (this.state.isLegal) {
+			// Read Parameters
+			const params = qs.parse(this.props.location.search.substring(1)) as unknown as HomePage.Parameters;
 
-		// Table Data
-		const table = {
-			headers: [
-				'Group', ...this.state.columns.map(column => lookup.columns[column].display)
-			],
-			data: this.state.data?.map(entry => [
-				entry.group === 'null'
-					? !this.state.hideNull && 'Unknown'
-					: entry.group,
-				...this.state.columns.map(
-					column =>
-						entry.data[column as keyof HomePage.Data['data']]
-				)
-			]).filter(entry => Boolean(entry[0])) as (string | number)[][]
+			// Handle Empty
+			params.columns = params.columns ?? [];
+
+			// Parse Table Data
+			const table = {
+				headers: [
+					'Group', ...params.columns.map(column => lookup.columns[column].display)
+				],
+				data: this.state.data.map(entry => [
+					entry.group === 'null'
+						? params.hideNull === '0' && 'Unknown'
+						: entry.group,
+					...params.columns.map(
+						column =>
+							entry.data[column as keyof HomePage.Data['data']]
+					)
+				]).filter(entry => Boolean(entry[0])) as (string | number)[][]
+			}
+
+			// Parse Chart Data
+			if (this._chart !== null && this.state.data !== undefined) {
+				this._chart.data = {
+					labels: Object.entries(this.state.data).map(
+						([_key, entry]) =>
+							entry.group === 'null'
+								? params.hideNull === '0' && 'Unknown'
+								: entry.group
+					).filter(Boolean),
+					datasets: params.columns.map(column => ({
+						label: lookup.columns[column].display,
+						data: this.state.data!.map(
+							entry =>
+								entry.data[column as keyof HomePage.Data['data']] ?? null
+						),
+						backgroundColor: 'hsl(' + lookup.columns[column].color + ', 0.2)',
+						borderColor: 'hsl(' + lookup.columns[column].color + ', 1.0)',
+						borderWidth: 1
+					}))
+				};
+
+				this._chart.update();
+			}
+
+			// Page Content
+			content = (
+				<Fragment>
+					<article>
+						<div className='grid'>
+							<fieldset>
+								<legend>Select Data</legend>
+
+								{Object.entries(lookup.columns).map(([alias, meta]) => {
+									const checked = params.columns.includes(alias);
+									const enabled = params.columns.length !== 1;
+
+									return (
+										<label key={alias} htmlFor={alias}>
+											<input type='checkbox' role='switch' id={alias} onChange={this.onChangeInput} checked={checked} disabled={checked && !enabled} />
+											<>{meta.display}</>
+										</label>
+									);
+								})}
+							</fieldset>
+
+							<div>
+								<label htmlFor='group'>
+									Group Data
+									<select id='group' value={params.group} onChange={this.onChangeSelect}>
+										{Object.keys(lookup.groups).map(alias =>
+											lookup.groups[alias].onlyFilter !== true
+												? [alias, toTitle(alias)]
+												: null
+										).filter(Boolean).map(option => (
+											<option key={option![0]} value={option![0]}>{option![1]}</option>
+										))}
+									</select>
+								</label>
+
+								<label htmlFor='hide_null'>
+									<input type='checkbox' role='switch' id='hide_null' onChange={this.onChangeInput} checked={params.hideNull === '1'} />
+									<>Hide Unknown</>
+								</label>
+							</div>
+
+							<div>
+								<label htmlFor='filterGroup'>
+									Filter Data
+									<select id='filterGroup' value={params.filter.group} onChange={this.onChangeSelect}>
+										{Object.keys(lookup.groups).map(alias =>
+											alias !== params.group
+												? [alias, toTitle(alias)]
+												: null
+										).filter(Boolean).map(option => (
+											<option key={option![0]} value={option![0]}>{option![1]}</option>
+										))}
+									</select>
+								</label>
+
+								<label htmlFor='filterField'>
+									Filter Data
+									<select id='filterField' value={params.filter.field ? this.state.options.indexOf(params.filter.field) : -1} onChange={this.onChangeSelect}>
+										{[[-1, 'None'], ...this.state.options.map(
+											(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
+										)].map(option => (
+											<option key={option![0]} value={option![0]}>{option![1]}</option>
+										))}
+									</select>
+								</label>
+							</div>
+						</div>
+					</article>
+
+					<section className='chart'>
+						<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
+					</section>
+
+					<section>
+						<figure>
+							<table role='grid'>
+								<thead>
+									<tr>{table.headers.map(name => (<th scope='col' key={name}>{name}</th>))}</tr>
+								</thead>
+
+								<tbody>
+									{table.data?.map(entry => (
+										<tr key={entry[0]}>
+											{entry.map((point, index) => (
+												<td key={index}>{point}</td>
+											))}
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</figure>
+					</section>
+				</Fragment>
+			);
 		}
 
 		// Component HTML
@@ -119,142 +228,154 @@ class HomePage extends React.Component<object, HomePage.State> {
 					<h3>Data summary.</h3>
 				</hgroup>
 
-				<article>
-					<div className='grid'>
-						<fieldset>
-							<legend>Select Data</legend>
-
-							{Object.entries(lookup.columns).map(([alias, meta]) => (
-								<Form.BooleanInput key={alias} name={[alias, meta.display]} onChange={this.onChange} checked />
-							))}
-						</fieldset>
-
-						<div>
-							<Form.SelectInput<string> name={['group', 'Group Data']} options={Object.keys(lookup.groups).map(alias =>
-								lookup.groups[alias].onlyFilter !== true ? [alias, toTitle(alias)] : null
-							).filter(Boolean) as [string, string][]} onChange={this.onChange} />
-
-							<Form.BooleanInput name={['hide_null', 'Hide Unknown']} onChange={this.onChange} checked />
-						</div>
-
-						<div>
-							<Form.SelectInput<string> name={['filterGroup', 'Filter Data']} options={Object.keys(lookup.groups).map(alias =>
-								alias !== this.state.group ? [alias, toTitle(alias)] : null
-							).filter(Boolean) as [string, string][]} onChange={this.onChange} selection={this.state.filter.group} />
-
-							<Form.SelectInput<number> name={['filterField', 'Require Field']} options={[[-1, 'None'], ...this.state.options.map(
-								(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
-							) as [number, string][]]} onChange={this.onChange} />
-						</div>
-					</div>
-				</article>
-
-				{this.state.data !== undefined && (
-					<Fragment>
-						<section className='chart'>
-							<canvas ref={this.onRefUpdate} onMouseDown={(e) => e.preventDefault()} />
-						</section>
-
-						<section>
-							<figure>
-								<table role='grid'>
-									<thead>
-										<tr>{table.headers.map(name => (<th scope='col' key={name}>{name}</th>))}</tr>
-									</thead>
-
-									<tbody>
-										{table.data?.map(entry => (
-											<tr key={entry[0]}>
-												{entry.map((point, index) => (
-													<td key={index}>{point}</td>
-												))}
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</figure>
-						</section>
-					</Fragment>
-				)}
+				{content}
 			</main>
 		);
 	}
 
+	// Check Parameters
+	checkParams = () => {
+		// Read Parameters
+		const params = qs.parse(this.props.location.search.substring(1));
+
+		// Updated Params
+		let updated: Partial<HomePage.Parameters> = { ...params };
+		let isLegal = true;
+
+		// Check Columns
+		if (!Array.isArray(params.columns)) {
+			updated.columns = Object.keys(lookup.columns);
+			isLegal = false;
+		} else {
+			for (const column of params.columns) if (typeof column !== 'string' || lookup.columns[column] === undefined) {
+				updated.columns = Object.keys(lookup.columns);
+				isLegal = false;
+			}
+		}
+
+		// Check Group
+		if (typeof params.group !== 'string' || lookup.groups[params.group] === undefined || lookup.groups[params.group].onlyFilter) {
+			updated.group = Object.keys(lookup.groups)[0];
+			isLegal = false;
+		}
+
+		// Check HideNull
+		if (typeof params.hideNull !== 'string' || !['0', '1'].includes(params.hideNull)) {
+			updated.hideNull = '1';
+			isLegal = false;
+		}
+
+		// Check Filter
+		if (typeof params.filter === 'object' && !Array.isArray(params.filter)) {
+			// Check Filter Group
+			if (typeof params.filter.group !== 'string' || lookup.groups[params.filter.group] === undefined || params.group === params.filter.group) {
+				updated.filter!.group = Object.keys(lookup.groups)[1];
+				updated.filter!.field = '';
+
+				isLegal = false;
+			}
+
+			// Check Filter Field
+			if (typeof params.filter.group !== 'string') {
+				updated.filter!.field = '';
+				isLegal = false;
+			}
+		} else {
+			updated.filter = { group: Object.keys(lookup.groups)[1], field: '' };
+			isLegal = false;
+		}
+
+		// Update State
+		this.props.history.push({ search: '?' + qs.stringify(updated) });
+		this.setState({ isLegal }, this.requestData);
+	}
+
 	// Request Data
 	requestData = () => {
-		axios.get('/api', {
-			params: {
-				columns: this.state.columns,
-				group: this.state.group,
-				filter: this.state.filter.field !== null
-					? this.state.filter
-					: undefined
-			}
-		}).then(({ data }) => {
-			if (this._mounted) this.setState({ data });
-		});
+		// Parse Parameters
+		const params = qs.parse(this.props.location.search.substring(1)) as unknown as HomePage.Parameters;
 
-		axios.get('/api', { params: { group: this.state.filter.group } }).then(({ data }: { data: { group: string }[] }) => {
-			if (this._mounted) this.setState({ options: data.map(entry => entry.group) });
+		// Request Filters
+		axios.get('/api', { params: { group: params.filter.group } }).then(({ data }: { data: { group: string }[] }) => {
+			if (this._mounted) {
+				// Parse Response
+				const options = data.map(entry => entry.group);
+
+				// Check Filter Field
+				if (!options.includes(params.filter.field) && params.filter.field !== '') {
+					params.filter.field = '';
+
+					this.props.history.push({ search: '?' + qs.stringify(params) });
+				}
+
+				// Update State
+				this.setState({ options });
+
+				// Request Data
+				axios.get('/api?' + qs.stringify(params)).then(({ data }) => {
+					if (this._mounted) this.setState({ data });
+				});
+			}
 		});
 	}
 
-	// Handle Change
-	onChange = (name: string, data: string | number | boolean) => {
+	// Handle Input Change
+	onChangeInput: React.ChangeEventHandler<HTMLInputElement> = event => {
+		// Parse Parameters
+		const params = qs.parse(this.props.location.search.substring(1)) as unknown as HomePage.Parameters;
+
 		// Switch on Type
-		switch (typeof data) {
-			case 'string':
-				switch (name) {
-					case 'filterGroup':
-						this.setState({
-							filter: {
-								group: data,
-								field: null
-							},
-						}, this.requestData);
-						break;
-
-					default:
-						this.setState(state => ({
-							group: data,
-							filter: data !== state.filter.group
-								? state.filter
-								: {
-									group: Object.keys(lookup.groups).find(
-										key => key !== data
-									)!,
-									field: null
-								}
-						}), this.requestData);
-						break;
-				}
-				break;
-
-			case 'number':
-				this.setState(state => ({
-					filter: {
-						group: state.filter.group,
-						field: data !== -1
-							? this.state.options[data]
-							: null
-					}
-				}), this.requestData);
-				break;
-
-			case 'boolean':
-				if (name === 'hide_null') {
-					this.setState({ hideNull: data });
+		switch (event.target.type) {
+			case 'checkbox':
+				if (event.target.id === 'hide_null') {
+					params.hideNull = event.target.checked ? '1' : '0';
 				} else {
-					this.setState(state => ({
-						columns: Object.keys(lookup.columns).filter(
-							column => data
-								? state.columns.includes(column) || column === name
-								: state.columns.includes(column) && column !== name
-						)
-					}), this.requestData);
+					params.columns = Object.keys(lookup.columns).filter(
+						column => event.target.checked
+							? params.columns.includes(column) || column === event.target.id
+							: params.columns.includes(column) && column !== event.target.id
+					)
 				}
 				break;
 		}
+
+		// Update Parameters
+		this.props.history.push({ search: '?' + qs.stringify(params) });
+	}
+
+	// Handle Select Change
+	onChangeSelect: React.ChangeEventHandler<HTMLSelectElement> = event => {
+		// Parse Parameters
+		const params = qs.parse(this.props.location.search.substring(1)) as unknown as HomePage.Parameters;
+
+		// Switch on ID
+		switch (event.target.id) {
+			case 'group':
+				params.group = event.target.value;
+				break;
+
+			case 'filterGroup':
+				params.filter.group = event.target.value;
+				params.filter.field = '';
+
+				this.setState({ options: [] });
+				break;
+
+			case 'filterField':
+				console.log(parseInt(event.target.value) === -1);
+
+				params.filter.field = parseInt(event.target.value) !== -1
+					? this.state.options[parseInt(event.target.value)]
+					: '';
+
+				console.log(this.state.options[parseInt(event.target.value)])
+				break;
+		}
+
+		// Update Parameters
+		console.log(params, qs.stringify(params));
+
+		this.props.history.push({ search: '?' + qs.stringify(params) });
 	}
 
 	// Handle Reference Update
@@ -304,4 +425,4 @@ class HomePage extends React.Component<object, HomePage.State> {
 }
 
 // Export
-export default HomePage;
+export default withRouter(HomePage);

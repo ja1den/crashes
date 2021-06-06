@@ -12,6 +12,11 @@ interface ResponseBody {
 	data: Record<string, number>;
 }
 
+interface FilterParams {
+	group: string;
+	field: string;
+}
+
 // Export
 export default async (req: Request, res: Response) => {
 	// Invalid Method
@@ -56,32 +61,23 @@ export default async (req: Request, res: Response) => {
 		let group = lookup.groups[req.query.group];
 
 		// Filters
-		if (typeof req.query.filter === 'string') {
-			try {
-				req.query.filter = JSON.parse(req.query.filter);
-			} catch (e) {
-				return res.status(400).end();
-			}
-		}
-
-		let filter: { group: string, field: string } | null = null;
+		let filter: FilterParams | null = null;
 
 		if (req.query.filter !== undefined) {
-			if (typeof req.query.filter === 'object' && !Array.isArray(req.query.filter)) {
-				if (typeof req.query.filter.group === 'string' && typeof req.query.filter.field === 'string') {
-					if (lookup.groups[req.query.filter.group] !== undefined) {
-						filter = {
-							group: req.query.filter.group,
-							field: req.query.filter.field
-						};
-					} else {
-						return res.status(400).end();
-					}
-				} else {
-					return res.status(400).end();
-				}
-			} else {
+			if (typeof req.query.filter !== 'object' || Array.isArray(req.query.filter)) {
 				return res.status(400).end();
+			}
+
+			if (typeof req.query.filter.group !== 'string' || typeof req.query.filter.field !== 'string') {
+				return res.status(400).end();
+			}
+
+			if (lookup.groups[req.query.filter.group] === undefined) {
+				return res.status(400).end();
+			}
+
+			if (req.query.filter.field !== '') {
+				filter = req.query.filter as unknown as FilterParams;
 			}
 		}
 
