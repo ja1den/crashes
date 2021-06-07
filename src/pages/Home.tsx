@@ -179,16 +179,13 @@ class HomePage extends React.Component<HomePage.Props, HomePage.State> {
 									</select>
 								</label>
 
-								<label htmlFor='filterField'>
-									Filter Data
-									<select id='filterField' value={params.filter.field ? this.state.options.indexOf(params.filter.field) : -1} onChange={this.onChangeSelect}>
-										{[[-1, 'None'], ...this.state.options.map(
-											(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
-										)].map(option => (
-											<option key={option![0]} value={option![0]}>{option![1]}</option>
-										))}
-									</select>
-								</label>
+								<select id='filterField' value={params.filter.field ? this.state.options.indexOf(params.filter.field) : -1} onChange={this.onChangeSelect}>
+									{[[-1, 'None'], ...this.state.options.map(
+										(entry, index) => [index, entry === 'null' ? 'Unknown' : entry]
+									)].map(option => (
+										<option key={option![0]} value={option![0]}>{option![1]}</option>
+									))}
+								</select>
 							</div>
 						</div>
 					</article>

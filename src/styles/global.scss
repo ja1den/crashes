@@ -28,7 +28,7 @@ $enable-semantic-container: true;
 		--spacing-block: 0.5rem;
 	}
 
-	label:nth-child(2) select {
+	select:nth-child(2) {
 		margin-bottom: 0;
 	}
 }
